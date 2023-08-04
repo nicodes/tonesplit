@@ -1,4 +1,6 @@
 <script lang="ts">
+  import styles from "./audioInterface.module.scss";
+
   let context: AudioContext;
   let osc1: OscillatorNode, osc2: OscillatorNode;
   let panner1: StereoPannerNode, panner2: StereoPannerNode;
@@ -74,53 +76,70 @@
 </script>
 
 <div>
-  <button on:click={toggleSound}>
-    {#if playing}Stop sound{:else}Play sine waves{/if}
-  </button>
-  <div>
-    <label>
-      Tone 1 Frequency:
-      <input type="range" min="20" max="2000" bind:value={frequency1} />
-    </label>
-    <label>
-      Tone 1 Type:
-      <select bind:value={oscType1}>
-        <option value="sine">Sine</option>
-        <option value="square">Square</option>
-        <option value="sawtooth">Sawtooth</option>
-        <option value="triangle">Triangle</option>
-      </select>
-    </label>
-    <label>
-      Tone 1 Pan:
-      <input type="range" min="-1" max="1" step="0.1" bind:value={pan1} />
-    </label>
-    <label>
-      Tone 1 Volume:
-      <input type="range" min="0" max="1" step="0.01" bind:value={volume1} />
-    </label>
-  </div>
-  <div>
-    <label>
-      Tone 2 Frequency:
-      <input type="range" min="20" max="2000" bind:value={frequency2} />
-    </label>
-    <label>
-      Tone 2 Type:
-      <select bind:value={oscType2}>
-        <option value="sine">Sine</option>
-        <option value="square">Square</option>
-        <option value="sawtooth">Sawtooth</option>
-        <option value="triangle">Triangle</option>
-      </select>
-    </label>
-    <label>
-      Tone 2 Pan:
-      <input type="range" min="-1" max="1" step="0.1" bind:value={pan2} />
-    </label>
-    <label>
-      Tone 2 Volume:
-      <input type="range" min="0" max="1" step="0.01" bind:value={volume2} />
-    </label>
+  <div class={styles.card}>
+    <p>ToneSplit</p>
+    <button on:click={toggleSound}>
+      {#if playing}Stop sound{:else}Play sine waves{/if}
+    </button>
+    <div class={styles.columns}>
+      <div>
+        <label>
+          Tone 1 Frequency:
+          <input type="range" min="20" max="2000" bind:value={frequency1} />
+        </label>
+        <label>
+          Tone 1 Type:
+          <select bind:value={oscType1}>
+            <option value="sine">Sine</option>
+            <option value="square">Square</option>
+            <option value="sawtooth">Sawtooth</option>
+            <option value="triangle">Triangle</option>
+          </select>
+        </label>
+        <label>
+          Tone 1 Pan:
+          <input type="range" min="-1" max="1" step="0.1" bind:value={pan1} />
+        </label>
+        <label>
+          Tone 1 Volume:
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            bind:value={volume1}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          Tone 2 Frequency:
+          <input type="range" min="20" max="2000" bind:value={frequency2} />
+        </label>
+        <label>
+          Tone 2 Type:
+          <select bind:value={oscType2}>
+            <option value="sine">Sine</option>
+            <option value="square">Square</option>
+            <option value="sawtooth">Sawtooth</option>
+            <option value="triangle">Triangle</option>
+          </select>
+        </label>
+        <label>
+          Tone 2 Pan:
+          <input type="range" min="-1" max="1" step="0.1" bind:value={pan2} />
+        </label>
+        <label>
+          Tone 2 Volume:
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            bind:value={volume2}
+          />
+        </label>
+      </div>
+    </div>
   </div>
 </div>
