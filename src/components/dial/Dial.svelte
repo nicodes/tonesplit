@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
 
   export let value = 0;
   export let min = 0;
@@ -9,28 +9,50 @@
   let knob;
   let startX, startY, startValue;
 
-  function handleMouseDown(event) {
+  function handleStart(event) {
     event.preventDefault();
-    startX = event.clientX;
-    startY = event.clientY;
+    const touch = event.touches ? event.touches[0] : event;
+    startX = touch.clientX;
+    startY = touch.clientY;
     startValue = value;
   }
 
-  function handleMouseMove(event) {
+  function handleMove(event) {
     if (!startX || !startY) return;
-    let deltaY = 6 * (startY - event.clientY);
+    const touch = event.touches ? event.touches[0] : event;
+    let deltaY = 6 * (startY - touch.clientY);
     value = Math.max(min, Math.min(max, startValue + deltaY));
   }
 
-  function handleMouseUp() {
+  function handleEnd() {
     startX = undefined;
     startY = undefined;
   }
 
   onMount(() => {
-    knob.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    if (knob) {
+      knob.addEventListener("mousedown", handleStart);
+      knob.addEventListener("touchstart", handleStart);
+    }
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("touchmove", handleMove);
+
+    window.addEventListener("mouseup", handleEnd);
+    window.addEventListener("touchend", handleEnd);
+  });
+
+  onDestroy(() => {
+    if (knob) {
+      knob.removeEventListener("mousedown", handleStart);
+      knob.removeEventListener("touchstart", handleStart);
+    }
+
+    window.removeEventListener("mousemove", handleMove);
+    window.removeEventListener("touchmove", handleMove);
+
+    window.removeEventListener("mouseup", handleEnd);
+    window.removeEventListener("touchend", handleEnd);
   });
 </script>
 
