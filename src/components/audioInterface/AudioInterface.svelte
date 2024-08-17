@@ -8,7 +8,7 @@
   import styles from "./audioInterface.module.scss";
 
   let audioContext: AudioContext;
-  let tones: Tone[] = [];
+  let tones: Tone[] = [createTone(), { ...createTone(), frequency: 444 }];
   let canvas: HTMLCanvasElement;
   let canvasContext: CanvasRenderingContext2D;
   let playing = false;
