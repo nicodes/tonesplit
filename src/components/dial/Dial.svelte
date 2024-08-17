@@ -34,6 +34,7 @@
   });
 </script>
 
+<!-- svelte-ignore a11y-label-has-associated-control -->
 <label>
   <span>{label}</span>
   <div
