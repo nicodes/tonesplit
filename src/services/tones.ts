@@ -12,13 +12,13 @@ export interface Tone {
   muted: boolean;
 }
 
-export function createTone() {
+export function createTone(frequency: number = 440) {
   return {
     osc: null,
     panner: null,
     gain: null,
     analyser: null,
-    frequency: 440,
+    frequency: frequency,
     oscType: "sine" as OscillatorType,
     pan: 0,
     volume: 1,

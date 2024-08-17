@@ -10,7 +10,7 @@
   import styles from "./audioInterface.module.scss";
 
   let audioContext: AudioContext;
-  let tones: Tone[] = [createTone(), { ...createTone(), frequency: 444 }];
+  let tones: Tone[] = [createTone(), createTone(444)];
   let canvas: HTMLCanvasElement;
   let canvasContext: CanvasRenderingContext2D;
   let playing = false;
@@ -82,7 +82,7 @@
   function playChord(chord: keyof typeof chords) {
     tones.forEach((t) => stopTone(t));
     tones = chords[chord].map((note) => {
-      return { ...createTone(), frequency: note };
+      return createTone(note);
     });
 
     if (playing) tones.forEach((t) => startTone(audioContext, t));
