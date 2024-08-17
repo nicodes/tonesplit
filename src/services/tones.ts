@@ -28,6 +28,28 @@ export function createTone() {
   };
 }
 
+export function startTone(audioContext: AudioContext, tone: Tone) {
+  tone.osc = audioContext.createOscillator();
+  tone.panner = audioContext.createStereoPanner();
+  tone.gain = audioContext.createGain();
+  tone.analyser = audioContext.createAnalyser();
+
+  tone.osc.type = tone.oscType;
+  tone.osc.frequency.value = tone.frequency;
+  tone.panner.pan.value = tone.pan;
+  tone.gain.gain.value = tone.muted ? 0 : tone.volume; // Set initial gain based on muted state
+
+  tone.osc.connect(tone.panner);
+  tone.panner.connect(tone.gain);
+  tone.gain.connect(tone.analyser);
+  tone.analyser.connect(audioContext.destination);
+  tone.osc.start(0);
+
+  tone.analyser.fftSize = 4096;
+  tone.bufferLength = tone.analyser.frequencyBinCount;
+  tone.dataArray = new Uint8Array(tone.bufferLength);
+}
+
 export function stopTone(tone: Tone) {
-  tone.osc.stop(0);
+  tone.osc?.stop(0);
 }

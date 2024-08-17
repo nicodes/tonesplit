@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
+
   import chords from "../../services/chords";
-  import { createTone, stopTone } from "../../services/tones";
+  import { createTone, stopTone, startTone } from "../../services/tones";
   import type { Tone } from "../../services/tones";
 
   import Input from "../input/Input.svelte";
+
   import styles from "./audioInterface.module.scss";
 
   let audioContext: AudioContext;
@@ -15,9 +17,9 @@
   let selectedChord: keyof typeof chords = "Cmaj"; // Default selected chord
 
   function addTone() {
-    const newTone = createTone();
-    tones = [...tones, newTone];
-    if (playing) startTone(tones.length - 1);
+    const t = createTone();
+    tones = [...tones, t];
+    if (playing) startTone(audioContext, t);
   }
 
   function removeTone(index: number) {
@@ -26,41 +28,20 @@
   }
 
   function toggleMute(index: number) {
-    tones[index].muted ? startTone(index) : stopTone(tones[index]);
+    tones[index].muted
+      ? startTone(audioContext, tones[index])
+      : stopTone(tones[index]);
     tones[index].muted = !tones[index].muted;
   }
 
-  function startTone(index: number) {
-    const tone = tones[index];
-    tone.osc = audioContext.createOscillator();
-    tone.panner = audioContext.createStereoPanner();
-    tone.gain = audioContext.createGain();
-    tone.analyser = audioContext.createAnalyser();
-
-    tone.osc.type = tone.oscType;
-    tone.osc.frequency.value = tone.frequency;
-    tone.panner.pan.value = tone.pan;
-    tone.gain.gain.value = tone.muted ? 0 : tone.volume; // Set initial gain based on muted state
-
-    tone.osc.connect(tone.panner);
-    tone.panner.connect(tone.gain);
-    tone.gain.connect(tone.analyser);
-    tone.analyser.connect(audioContext.destination);
-    tone.osc.start(0);
-
-    tone.analyser.fftSize = 4096;
-    tone.bufferLength = tone.analyser.frequencyBinCount;
-    tone.dataArray = new Uint8Array(tone.bufferLength);
-  }
-
-  function toggleSound() {
+  function togglePlaying() {
     if (playing) {
-      tones.forEach((tone) => tone.osc.stop(0));
+      tones.forEach((t) => stopTone(t));
       playing = false;
       return;
     }
 
-    tones.forEach((_, index) => startTone(index));
+    tones.forEach((t) => startTone(audioContext, t));
     playing = true;
     drawWaveform();
   }
@@ -104,7 +85,7 @@
       return { ...createTone(), frequency: note };
     });
 
-    if (playing) tones.forEach((_, i) => startTone(i));
+    if (playing) tones.forEach((t) => startTone(audioContext, t));
   }
 
   onMount(() => {
@@ -114,11 +95,11 @@
   });
 
   $: if (playing) {
-    tones.forEach((tone) => {
-      tone.osc.frequency.value = tone.frequency;
-      tone.osc.type = tone.oscType;
-      tone.panner.pan.value = tone.pan;
-      tone.gain.gain.value = tone.muted ? 0 : tone.volume; // Adjust gain based on muted state
+    tones.forEach((t) => {
+      t.osc.frequency.value = t.frequency;
+      t.osc.type = t.oscType;
+      t.panner.pan.value = t.pan;
+      t.gain.gain.value = t.muted ? 0 : t.volume; // Adjust gain based on muted state
     });
   }
 </script>
@@ -165,7 +146,7 @@
     <button on:click={() => playChord(selectedChord)}>Add Chord</button>
   </div>
 
-  <button on:click={toggleSound}>
+  <button on:click={togglePlaying}>
     {#if playing}🟥{:else}🟢{/if}
   </button>
 </div>
