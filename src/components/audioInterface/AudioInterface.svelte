@@ -6,6 +6,7 @@
   import type { Tone } from "../../services/tones";
 
   import Input from "../input/Input.svelte";
+  import Dial from "../dial/Dial.svelte";
 
   import styles from "./audioInterface.module.scss";
 
@@ -117,7 +118,8 @@
         <option value="sawtooth">Sawtooth</option>
         <option value="triangle">Triangle</option>
       </select>
-      <Input type="range" bind:value={t.frequency} min={0} max={2000} />
+      <Dial bind:value={t.frequency} min={0} max={2000} />
+      <!-- <Input type="range" bind:value={t.frequency} min={0} max={2000} /> -->
       <Input type="range" bind:value={t.volume} min={0} max={1} step={0.01} />
       <Input type="range" bind:value={t.pan} min={-1} max={1} step={0.01} />
       <button on:click={() => toggleMute(i)}>{t.muted ? "🔊" : "🔇"}</button>
