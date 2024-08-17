@@ -27,30 +27,28 @@
     tones = tones.filter((_, i) => i !== index);
   }
 
+  function togglePlaying() {
+    if (playing) tones.forEach((t) => stopTone(t));
+    else tones.forEach((t) => startTone(audioContext, t));
+    playing = !playing;
+  }
+
   function toggleMute(index: number) {
-    tones[index].muted
-      ? startTone(audioContext, tones[index])
-      : stopTone(tones[index]);
+    if (tones[index].muted) startTone(audioContext, tones[index]);
+    else stopTone(tones[index]);
     tones[index].muted = !tones[index].muted;
   }
 
-  function togglePlaying() {
-    if (playing) {
-      tones.forEach((t) => stopTone(t));
-      playing = false;
-      return;
-    }
-
-    tones.forEach((t) => startTone(audioContext, t));
-    playing = true;
-    drawWaveform();
+  function playChord(chord: keyof typeof chords) {
+    tones.forEach((t) => stopTone(t));
+    tones = chords[chord].map((note) => createTone(note));
+    if (playing) tones.forEach((t) => startTone(audioContext, t));
   }
 
   function drawWaveform() {
     if (!playing) return;
 
     requestAnimationFrame(drawWaveform);
-
     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
     canvasContext.fillStyle = "rgb(200, 200, 200)";
     canvasContext.fillRect(0, 0, canvas.width, canvas.height);
@@ -79,15 +77,6 @@
     });
   }
 
-  function playChord(chord: keyof typeof chords) {
-    tones.forEach((t) => stopTone(t));
-    tones = chords[chord].map((note) => {
-      return createTone(note);
-    });
-
-    if (playing) tones.forEach((t) => startTone(audioContext, t));
-  }
-
   onMount(() => {
     audioContext = new ((window as any).AudioContext ||
       (window as any).webkitAudioContext)();
@@ -101,6 +90,7 @@
       t.panner.pan.value = t.pan;
       t.gain.gain.value = t.muted ? 0 : t.volume; // Adjust gain based on muted state
     });
+    drawWaveform();
   }
 </script>
 
