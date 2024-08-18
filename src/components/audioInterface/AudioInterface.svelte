@@ -44,9 +44,9 @@
   }
 
   function toggleMute(index: number) {
-    const tone = tones[index];
-    tone.muted = !tone.muted;
-    tone.muted ? stopTone(tone) : startTone(audioContext, tone);
+    if (tones[index].muted) startTone(audioContext, tones[index]);
+    else stopTone(tones[index]);
+    tones[index].muted = !tones[index].muted;
   }
 
   function playChord(chord: keyof typeof chords) {
