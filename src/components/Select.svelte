@@ -6,8 +6,9 @@
   <slot></slot>
 </select>
 
-<style>
+<style lang="scss">
   select {
+    height: 44px;
     background-color: transparent;
     color: white;
     border: 2px solid white;
@@ -46,10 +47,5 @@
   select:focus {
     border-color: red;
     box-shadow: 0 0 8px rgba(255, 0, 0, 0.8); /* Red glow effect */
-  }
-
-  select option {
-    background-color: #333; /* Dark background for the dropdown */
-    color: white;
   }
 </style>

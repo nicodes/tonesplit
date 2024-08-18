@@ -11,7 +11,7 @@
   <span class="centered">♪</span>
 </div>
 
-<style>
+<style lang="scss">
   .title-container {
     display: grid;
     grid-template-columns: 1fr 1fr;

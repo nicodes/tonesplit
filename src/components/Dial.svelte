@@ -71,7 +71,7 @@
 </script>
 
 <!-- svelte-ignore a11y-label-has-associated-control -->
-<label>
+<label class="label">
   <span>{label}</span>
   <div
     class="knob"
@@ -87,13 +87,13 @@
   />
 </label>
 
-<style>
+<style lang="scss">
   .knob {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: #ddd;
     display: flex;
+    border: 3px solid white;
     align-items: center;
     justify-content: center;
     position: relative;
@@ -110,7 +110,7 @@
     position: absolute;
     width: 3px;
     height: 50%;
-    background: #333;
+    background: white;
     top: 0;
     left: 50%;
     transform: translateX(-50%);
