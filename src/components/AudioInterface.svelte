@@ -1,14 +1,12 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
 
-  import chords from "../../services/chords";
-  import { createTone, stopTone, startTone } from "../../services/tones";
-  import type { Tone } from "../../services/tones";
+  import chords from "../services/chords";
+  import { createTone, stopTone, startTone } from "../services/audio";
+  import type { Tone } from "../services/audio";
 
-  import Title from "../title/Title.svelte";
-  import Dial from "../dial/Dial.svelte";
-
-  import styles from "./audioInterface.module.scss";
+  import Dial from "./Dial.svelte";
+  import Select from "./Select.svelte";
 
   let audioContext: AudioContext;
   let tones: Tone[] = [
@@ -160,13 +158,10 @@
   }
 </script>
 
-<div class={styles.pedal}>
-  <Title />
+<div class="pedal">
+  <canvas bind:this={canvas} width="300" height="160" class="canvas"></canvas>
 
-  <canvas bind:this={canvas} width="300" height="160" class={styles.canvas}
-  ></canvas>
-
-  <div class={styles.grid}>
+  <div class="grid">
     {#if tones.length > 0}
       <div><strong>#</strong></div>
       <div><strong>Wave</strong></div>
@@ -176,13 +171,13 @@
 
       {#each tones as t, i}
         <div>{i + 1}</div>
-        <div class={styles.subgrid}>
-          <select bind:value={t.oscType}>
+        <div class="subgrid">
+          <Select bind:value={t.oscType}>
             <option value="sine">Sine</option>
             <option value="square">Square</option>
             <option value="sawtooth">Sawtooth</option>
             <option value="triangle">Triangle</option>
-          </select>
+          </Select>
           <button on:click={() => toggleMute(i)}>{t.muted ? "🔊" : "🔇"}</button
           >
           <button on:click={() => removeTone(i)}>❌</button>
@@ -201,14 +196,14 @@
     >
       ➕
     </button>
-    <select bind:value={selectedChord}>
+    <Select bind:value={selectedChord}>
       <option value={selectedChordDefault}>{selectedChordDefault}</option>
       {#each Object.keys(chords) as c}
         <option value={c}>{c}</option>
       {/each}
-    </select>
+    </Select>
 
-    <div class={styles.chords}>
+    <div class="chords">
       <button on:click={removeAllTones}>Clear</button>
     </div>
   </div>
@@ -217,3 +212,108 @@
     {#if playing}🟥{:else}🟢{/if}
   </button>
 </div>
+
+<style lang="scss">
+  .pedal {
+    margin: auto;
+    // border: 3px solid white;
+    border-radius: 10px;
+    max-width: 600px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: min-content auto 1fr 1fr 1fr;
+    align-items: center;
+    justify-items: center;
+    gap: 12px;
+
+    & > :last-child {
+      grid-column: span 2;
+      width: 100%;
+    }
+
+    button {
+      background-color: transparent;
+      border: 2px solid white;
+      border-radius: 8px;
+      color: white;
+    }
+
+    select {
+      background-color: transparent;
+      color: white;
+      border: 2px solid white;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 16px;
+      appearance: none; /* Remove default arrow */
+      -webkit-appearance: none; /* Remove default arrow in Safari */
+      -moz-appearance: none; /* Remove default arrow in Firefox */
+      cursor: pointer;
+      outline: none;
+      position: relative;
+      padding-right: 30px; /* Add space for the triangle */
+    }
+
+    /* Create the white triangle */
+    select::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid white;
+      pointer-events: none;
+    }
+
+    select:hover {
+      border-color: #ccc;
+    }
+
+    /* Red glow effect on focus */
+    select:focus {
+      border-color: red;
+      box-shadow: 0 0 8px rgba(255, 0, 0, 0.8); /* Red glow effect */
+    }
+
+    select option {
+      background-color: #333; /* Dark background for the dropdown */
+      color: white;
+    }
+  }
+
+  .subgrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+
+    > :first-child {
+      grid-column: span 2;
+    }
+  }
+
+  .input {
+    :first-child {
+      display: none;
+    }
+  }
+
+  .section {
+    border: 2px solid white;
+  }
+
+  .canvas {
+    border: 3px solid white;
+    border-radius: 8px;
+  }
+</style>

@@ -1,34 +1,12 @@
-.pedal {
-  margin: auto;
-  // border: 3px solid white;
-  border-radius: 10px;
-  max-width: 600px;
+<script lang="ts">
+  export let value: string | number | undefined = undefined;
+</script>
 
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px;
-}
+<select bind:value>
+  <slot></slot>
+</select>
 
-.grid {
-  display: grid;
-  grid-template-columns: min-content auto 1fr 1fr 1fr;
-  align-items: center;
-  justify-items: center;
-  gap: 12px;
-
-  & > :last-child {
-    grid-column: span 2;
-    width: 100%;
-  }
-
-  button {
-    background-color: transparent;
-    border: 2px solid white;
-    border-radius: 8px;
-    color: white;
-  }
-
+<style>
   select {
     background-color: transparent;
     color: white;
@@ -74,29 +52,4 @@
     background-color: #333; /* Dark background for the dropdown */
     color: white;
   }
-}
-
-.subgrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-
-  > :first-child {
-    grid-column: span 2;
-  }
-}
-
-.input {
-  :first-child {
-    display: none;
-  }
-}
-
-.section {
-  border: 2px solid white;
-}
-
-.canvas {
-  border: 3px solid white;
-  border-radius: 8px;
-}
+</style>

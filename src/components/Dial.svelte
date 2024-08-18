@@ -4,9 +4,11 @@
   export let value = 0;
   export let min = 0;
   export let max = 100;
-  export let step = (max - min) / 256;
-  const keyboardStep = (max - min) / 100;
   export let label = "";
+
+  const diff = max - min;
+  export let step = diff / 256;
+  const keyboardStep = diff / 100;
 
   let knob;
   let startX, startY, startValue;
