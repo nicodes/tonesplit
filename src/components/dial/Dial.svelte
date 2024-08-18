@@ -4,6 +4,7 @@
   export let value = 0;
   export let min = 0;
   export let max = 100;
+  export let step = (max - min) / 256;
   export let label = "";
 
   let knob;
@@ -20,7 +21,7 @@
   function handleMove(event) {
     if (!startX || !startY) return;
     const touch = event.touches ? event.touches[0] : event;
-    let deltaY = 6 * (startY - touch.clientY);
+    let deltaY = step * (startY - touch.clientY);
     value = Math.max(min, Math.min(max, startValue + deltaY));
   }
 

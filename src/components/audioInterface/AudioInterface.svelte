@@ -15,7 +15,9 @@
   let canvas: HTMLCanvasElement;
   let canvasContext: CanvasRenderingContext2D;
   let playing = false;
-  let selectedChord: keyof typeof chords = "Cmaj"; // Default selected chord
+  const selectedChordDefault = "-- chord --";
+  let selectedChord: typeof selectedChordDefault | keyof typeof chords =
+    selectedChordDefault; // Default selected chord
 
   function addTone() {
     const t = createTone();
@@ -26,6 +28,11 @@
   function removeTone(index: number) {
     stopTone(tones[index]);
     tones = tones.filter((_, i) => i !== index);
+  }
+
+  function removeAllTones() {
+    tones.forEach((t) => stopTone(t));
+    tones = [];
   }
 
   function togglePlaying() {
@@ -42,7 +49,7 @@
 
   function playChord(chord: keyof typeof chords) {
     tones.forEach((t) => stopTone(t));
-    tones = chords[chord].map((note) => createTone(note));
+    tones = [...tones, ...chords[chord].map((note) => createTone(note))];
     if (playing) tones.forEach((t) => startTone(audioContext, t));
   }
 
@@ -102,40 +109,50 @@
   ></canvas>
 
   <div class={styles.grid}>
-    <div><strong>#</strong></div>
-    <div><strong>Waveform</strong></div>
-    <div><strong>Frequency</strong></div>
-    <div><strong>Volume</strong></div>
-    <div><strong>Pan</strong></div>
-    <div></div>
-    <div></div>
+    {#if tones.length > 0}
+      <div><strong>#</strong></div>
+      <div><strong>Wave</strong></div>
+      <div><strong>Freq</strong></div>
+      <div><strong>Vol</strong></div>
+      <div><strong>Pan</strong></div>
 
-    {#each tones as t, i}
-      <div>{i + 1}</div>
-      <select bind:value={t.oscType}>
-        <option value="sine">Sine</option>
-        <option value="square">Square</option>
-        <option value="sawtooth">Sawtooth</option>
-        <option value="triangle">Triangle</option>
-      </select>
-      <Dial bind:value={t.frequency} min={0} max={2000} />
-      <!-- <Input type="range" bind:value={t.frequency} min={0} max={2000} /> -->
-      <Input type="range" bind:value={t.volume} min={0} max={1} step={0.01} />
-      <Input type="range" bind:value={t.pan} min={-1} max={1} step={0.01} />
-      <button on:click={() => toggleMute(i)}>{t.muted ? "🔊" : "🔇"}</button>
-      <button on:click={() => removeTone(i)}>❌</button>
-    {/each}
+      {#each tones as t, i}
+        <div>{i + 1}</div>
+        <div class={styles.subgrid}>
+          <select bind:value={t.oscType}>
+            <option value="sine">Sine</option>
+            <option value="square">Square</option>
+            <option value="sawtooth">Sawtooth</option>
+            <option value="triangle">Triangle</option>
+          </select>
+          <button on:click={() => toggleMute(i)}>{t.muted ? "🔊" : "🔇"}</button
+          >
+          <button on:click={() => removeTone(i)}>❌</button>
+        </div>
+        <Dial bind:value={t.frequency} min={0} max={2000} />
+        <Dial bind:value={t.volume} min={0} max={1} />
+        <Dial bind:value={t.pan} min={-1} max={1} />
+      {/each}
+    {/if}
 
-    <button on:click={addTone}>➕</button>
-  </div>
-
-  <div class={styles.chords}>
+    <button
+      on:click={() =>
+        selectedChord === selectedChordDefault
+          ? addTone()
+          : playChord(selectedChord)}
+    >
+      ➕
+    </button>
     <select bind:value={selectedChord} id="exampleSelect" name="options">
+      <option value={selectedChordDefault}>{selectedChordDefault}</option>
       {#each Object.keys(chords) as c}
         <option value={c}>{c}</option>
       {/each}
     </select>
-    <button on:click={() => playChord(selectedChord)}>Add Chord</button>
+
+    <div class={styles.chords}>
+      <button on:click={removeAllTones}>Clear</button>
+    </div>
   </div>
 
   <button on:click={togglePlaying}>
