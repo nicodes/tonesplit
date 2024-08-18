@@ -5,6 +5,7 @@
   export let min = 0;
   export let max = 100;
   export let step = (max - min) / 256;
+  const keyboardStep = (max - min) / 100;
   export let label = "";
 
   let knob;
@@ -28,6 +29,16 @@
   function handleEnd() {
     startX = undefined;
     startY = undefined;
+  }
+
+  function handleKeydown(event) {
+    if (event.key === "ArrowUp" || event.key === "ArrowRight") {
+      value = Math.min(max, value + keyboardStep);
+      event.preventDefault();
+    } else if (event.key === "ArrowDown" || event.key === "ArrowLeft") {
+      value = Math.max(min, value - keyboardStep);
+      event.preventDefault();
+    }
   }
 
   onMount(() => {
@@ -64,6 +75,13 @@
     class="knob"
     bind:this={knob}
     style="transform: rotate({((value - min) / (max - min)) * 270 - 135}deg);"
+    tabindex="0"
+    role="slider"
+    aria-valuemin={min}
+    aria-valuemax={max}
+    aria-valuenow={value}
+    aria-label={label}
+    on:keydown={handleKeydown}
   />
 </label>
 
@@ -78,6 +96,11 @@
     justify-content: center;
     position: relative;
     cursor: pointer;
+    outline: none;
+  }
+
+  .knob:focus {
+    box-shadow: 0 0 0 3px rgba(21, 156, 228, 0.4);
   }
 
   .knob::before {
