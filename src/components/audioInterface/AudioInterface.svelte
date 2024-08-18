@@ -5,7 +5,7 @@
   import { createTone, stopTone, startTone } from "../../services/tones";
   import type { Tone } from "../../services/tones";
 
-  import Input from "../input/Input.svelte";
+  import Title from "../title/Title.svelte";
   import Dial from "../dial/Dial.svelte";
 
   import styles from "./audioInterface.module.scss";
@@ -65,7 +65,7 @@
     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw the separating border between the channels
-    canvasContext.strokeStyle = "#000000"; // Black border
+    canvasContext.strokeStyle = "white"; // Black border
     canvasContext.lineWidth = 2;
     canvasContext.beginPath();
     canvasContext.moveTo(0, chartHeight);
@@ -125,7 +125,7 @@
           chartHeight,
           chartHeight,
           index
-        ); // Tone ♪ Split
+        );
       }
     });
 
@@ -155,9 +155,9 @@
 </script>
 
 <div class={styles.pedal}>
-  <p class={styles.span}>ToneSplit</p>
+  <Title />
 
-  <canvas bind:this={canvas} width="300" height="160" class={styles.span}
+  <canvas bind:this={canvas} width="300" height="160" class={styles.canvas}
   ></canvas>
 
   <div class={styles.grid}>
