@@ -12,16 +12,24 @@ export interface Tone {
   muted: boolean;
 }
 
-export function createTone(frequency: number = 440) {
+export function createTone({
+  frequency = undefined,
+  pan = undefined,
+  volume = undefined,
+}: {
+  frequency?: number;
+  pan?: number;
+  volume?: number;
+} = {}) {
   return {
     osc: null,
     panner: null,
     gain: null,
     analyser: null,
-    frequency: frequency,
+    frequency: frequency || 440,
     oscType: "sine" as OscillatorType,
-    pan: 0,
-    volume: 0.3,
+    pan: pan || 0,
+    volume: volume || 0.3,
     dataArray: null,
     bufferLength: 0,
     muted: false, // Initialize the muted state
