@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
 
   import chords from "../../services/chords";
   import { createTone, stopTone, startTone } from "../../services/tones";
@@ -21,6 +21,8 @@
   let selectedChord: typeof selectedChordDefault | keyof typeof chords =
     selectedChordDefault; // Default selected chord
 
+  let drawRequestId: number;
+
   function addTone() {
     const t = createTone();
     tones = [...tones, t];
@@ -38,8 +40,13 @@
   }
 
   function togglePlaying() {
-    if (playing) tones.forEach((t) => stopTone(t));
-    else tones.forEach((t) => startTone(audioContext, t));
+    if (playing) {
+      tones.forEach((t) => stopTone(t));
+      cancelAnimationFrame(drawRequestId); // Stop drawing when not playing
+    } else {
+      tones.forEach((t) => startTone(audioContext, t));
+      drawWaveform(); // Start drawing when playing
+    }
     playing = !playing;
   }
 
@@ -82,7 +89,6 @@
   function drawWaveform() {
     if (!playing) return;
 
-    requestAnimationFrame(drawWaveform);
     canvasContextLeft.clearRect(0, 0, canvasLeft.width, canvasLeft.height);
     canvasContextRight.clearRect(0, 0, canvasRight.width, canvasRight.height);
 
@@ -97,12 +103,20 @@
       if (tone.pan <= 0)
         drawChannel(canvasContextRight, canvasRight, sliceWidth, tone, index);
     });
+
+    // Use requestAnimationFrame to throttle the draw calls
+    drawRequestId = requestAnimationFrame(drawWaveform);
   }
 
   onMount(() => {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     canvasContextLeft = canvasLeft.getContext("2d")!;
     canvasContextRight = canvasRight.getContext("2d")!;
+  });
+
+  onDestroy(() => {
+    cancelAnimationFrame(drawRequestId); // Clean up the animation frame on component destroy
+    tones.forEach(stopTone); // Stop all tones to free up resources
   });
 
   $: if (playing) {
