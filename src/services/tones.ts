@@ -21,7 +21,7 @@ export function createTone(frequency: number = 440) {
     frequency: frequency,
     oscType: "sine" as OscillatorType,
     pan: 0,
-    volume: 1,
+    volume: 0.3,
     dataArray: null,
     bufferLength: 0,
     muted: false, // Initialize the muted state
