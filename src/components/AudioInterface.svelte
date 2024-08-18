@@ -11,8 +11,11 @@
 
   let audioContext: AudioContext;
   let tones: Tone[] = [
-    createTone({ pan: -1 }),
-    createTone({ frequency: 444, pan: 1 }),
+    createTone({ frequency: 108, pan: -1 }),
+    createTone({ frequency: 111, pan: -1 }),
+
+    createTone({ frequency: 114, pan: 1 }),
+    createTone({ frequency: 117, pan: 1 }),
   ];
   let canvas: HTMLCanvasElement;
   let canvasContext: CanvasRenderingContext2D;
