@@ -12,10 +12,8 @@
 
   let audioContext: AudioContext;
   let tones: Tone[] = [createTone(), createTone(444)];
-  let canvasLeft: HTMLCanvasElement;
-  let canvasRight: HTMLCanvasElement;
-  let canvasContextLeft: CanvasRenderingContext2D;
-  let canvasContextRight: CanvasRenderingContext2D;
+  let canvas: HTMLCanvasElement;
+  let canvasContext: CanvasRenderingContext2D;
   let playing = false;
   const selectedChordDefault = "-- chord --";
   let selectedChord: typeof selectedChordDefault | keyof typeof chords =
@@ -62,11 +60,25 @@
     if (playing) tones.forEach((t) => startTone(audioContext, t));
   }
 
+  function drawBackground() {
+    const chartHeight = canvas.height / 2;
+    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the separating border between the channels
+    canvasContext.strokeStyle = "#000000"; // Black border
+    canvasContext.lineWidth = 2;
+    canvasContext.beginPath();
+    canvasContext.moveTo(0, chartHeight);
+    canvasContext.lineTo(canvas.width, chartHeight);
+    canvasContext.stroke();
+  }
+
   function drawChannel(
     context: CanvasRenderingContext2D,
-    channel: HTMLCanvasElement,
     sliceWidth: number,
     tone: Tone,
+    startY: number,
+    chartHeight: number,
     index: number
   ) {
     context.lineWidth = 2;
@@ -76,32 +88,45 @@
     let x = 0;
     for (let i = 0; i < tone.bufferLength; i++) {
       const v = tone.dataArray[i] / 128.0;
-      if (Math.abs(v) < 0.01) return;
+      // if (Math.abs(v) < 0.01) return;
 
-      const y = (v * channel.height) / 2;
+      const y = startY + (v * chartHeight) / 2;
       i === 0 ? context.moveTo(x, y) : context.lineTo(x, y);
       x += sliceWidth;
     }
-    context.lineTo(channel.width, channel.height / 2);
+    // context.lineTo(canvas.width, startY + chartHeight / 2);
     context.stroke();
   }
 
   function drawWaveform() {
     if (!playing) return;
 
-    canvasContextLeft.clearRect(0, 0, canvasLeft.width, canvasLeft.height);
-    canvasContextRight.clearRect(0, 0, canvasRight.width, canvasRight.height);
+    const chartHeight = canvas.height / 2;
+
+    // Draw the background and divider
+    drawBackground();
 
     tones.forEach((tone, index) => {
       if (tone.muted) return;
 
       tone.analyser.getByteTimeDomainData(tone.dataArray);
-      const sliceWidth = (canvasLeft.width * 6.0) / tone.bufferLength;
+      const sliceWidth = (canvas.width * 6.0) / tone.bufferLength;
 
-      if (tone.pan >= 0)
-        drawChannel(canvasContextLeft, canvasLeft, sliceWidth, tone, index);
-      if (tone.pan <= 0)
-        drawChannel(canvasContextRight, canvasRight, sliceWidth, tone, index);
+      if (tone.pan >= 0) {
+        // Draw on the top half for left channel
+        drawChannel(canvasContext, sliceWidth, tone, 0, chartHeight, index);
+      }
+      if (tone.pan <= 0) {
+        // Draw on the bottom half for right channel
+        drawChannel(
+          canvasContext,
+          sliceWidth,
+          tone,
+          chartHeight,
+          chartHeight,
+          index
+        ); // Tone ♪ Split
+      }
     });
 
     // Use requestAnimationFrame to throttle the draw calls
@@ -110,8 +135,7 @@
 
   onMount(() => {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    canvasContextLeft = canvasLeft.getContext("2d")!;
-    canvasContextRight = canvasRight.getContext("2d")!;
+    canvasContext = canvas.getContext("2d")!;
   });
 
   onDestroy(() => {
@@ -133,9 +157,7 @@
 <div class={styles.pedal}>
   <p class={styles.span}>ToneSplit</p>
 
-  <canvas bind:this={canvasLeft} width="300" height="80" class={styles.span}
-  ></canvas>
-  <canvas bind:this={canvasRight} width="300" height="80" class={styles.span}
+  <canvas bind:this={canvas} width="300" height="160" class={styles.span}
   ></canvas>
 
   <div class={styles.grid}>
