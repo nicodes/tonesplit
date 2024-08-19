@@ -28,6 +28,12 @@
 
   let drawRequestId: number;
 
+  let numberInputMode = false;
+
+  function toggleNumberInputMode() {
+    numberInputMode = !numberInputMode;
+  }
+
   function addTone() {
     const t = createTone();
     tones = [...tones, t];
@@ -188,9 +194,27 @@
           <option value="triangle">Triangle</option>
         </Select>
 
-        <Dial bind:value={t.frequency} min={0} max={2000} />
-        <Dial bind:value={t.volume} min={0} max={1} />
-        <Dial bind:value={t.pan} min={-1} max={1} />
+        {#if numberInputMode}
+          <input type="number" bind:value={t.frequency} min={0} max={2000} />
+          <input
+            type="number"
+            bind:value={t.volume}
+            min={0}
+            max={1}
+            step="0.01"
+          />
+          <input
+            type="number"
+            bind:value={t.pan}
+            min={-1}
+            max={1}
+            step="0.01"
+          />
+        {:else}
+          <Dial bind:value={t.frequency} min={0} max={2000} />
+          <Dial bind:value={t.volume} min={0} max={1} />
+          <Dial bind:value={t.pan} min={-1} max={1} />
+        {/if}
       {/each}
     {/if}
 
@@ -211,7 +235,9 @@
     </Select>
 
     <div></div>
-    <div></div>
+    <button on:click={toggleNumberInputMode}>
+      {#if numberInputMode}Dials{:else}Edit{/if}
+    </button>
     <button on:click={removeAllTones}>❌</button>
   </div>
 
