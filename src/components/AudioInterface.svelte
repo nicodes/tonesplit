@@ -9,6 +9,8 @@
   import Select from "./Select.svelte";
   import Circle from "./Circle.svelte";
 
+  const colors = ["orange", "yellow", "green", "blue", "indigo", "violet"];
+
   let audioContext: AudioContext;
   let tones: Tone[] = [
     createTone({ frequency: 108, pan: -1 }),
@@ -90,7 +92,7 @@
     index: number
   ) {
     context.lineWidth = 2;
-    context.strokeStyle = `rgb(${index * 60}, 0, 255)`;
+    context.strokeStyle = colors[index];
     context.beginPath();
 
     let x = 0;
@@ -175,7 +177,7 @@
 
       {#each tones as t, i}
         <button on:click={() => toggleMute(i)}>
-          <Circle radius={8} />
+          <Circle radius={8} color={t.muted ? "red" : colors[i]} />
         </button>
 
         <Select bind:value={t.oscType}>

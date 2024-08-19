@@ -1,15 +1,16 @@
 <script>
   export let radius = 22;
+  export let color = "blue";
 </script>
 
 <div
   class="circle"
-  style="width: {radius * 2}px; height: {radius * 2}px;"
+  style="width: {radius * 2}px; height: {radius *
+    2}px; background-color: {color}"
 ></div>
 
 <style>
   .circle {
     border-radius: 50%;
-    background-color: #3498db;
   }
 </style>
