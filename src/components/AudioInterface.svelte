@@ -122,12 +122,13 @@
       tone.analyser.getByteTimeDomainData(tone.dataArray);
       const sliceWidth = (canvas.width * 6.0) / tone.bufferLength;
 
-      if (tone.pan >= 0) {
-        // Draw on the top half for left channel
+      // Draw on the top half for left channel
+      if (tone.pan <= 0) {
         drawChannel(canvasContext, sliceWidth, tone, 0, chartHeight, index);
       }
-      if (tone.pan <= 0) {
-        // Draw on the bottom half for right channel
+
+      // Draw on the bottom half for right channel
+      if (tone.pan >= 0) {
         drawChannel(
           canvasContext,
           sliceWidth,
