@@ -1,3 +1,2 @@
-// since there's no dynamic data here, we can prerender
-// it so that it gets served as a static asset in production
-export const prerender = true;
+// disable ssr because AudioInterface is client side. Find a better way to handle this so it can be SSR
+export const ssr = false;
