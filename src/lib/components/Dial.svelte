@@ -96,8 +96,9 @@
 <style lang="scss">
   .knob {
     position: relative;
-    width: 44px;
-    height: 44px;
+    min-height: 44px;
+    min-width: 44px;
+
     border: 3px solid var(--white);
     border-radius: 50%;
 

@@ -257,6 +257,7 @@
     button {
       min-height: 44px;
       min-width: 44px;
+
       background-color: transparent;
       border: 2px solid white;
       border-radius: 8px;
@@ -274,10 +275,8 @@
   }
 
   .grid {
-    width: 100%;
     display: grid;
-    grid-template-columns: auto max-content auto auto auto;
-    justify-content: center;
+    grid-template-columns: min-content auto min-content min-content min-content;
     align-items: center;
     gap: 12px;
   }

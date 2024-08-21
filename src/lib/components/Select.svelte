@@ -8,6 +8,9 @@
 
 <style lang="scss">
   select {
+    min-width: 135px;
+    min-height: 44px;
+
     padding: 8px 12px;
 
     background-color: transparent;
