@@ -1,39 +1,45 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
 
-  export let value = 0;
-  export let min = 0;
-  export let max = 100;
-  export let label = "";
+  export let value: number = 0;
+  export let min: number = 0;
+  export let max: number = 100;
+  export let label: string = "";
 
-  const diff = max - min;
-  export let step = diff / 256;
-  const keyboardStep = diff / 100;
+  const diff: number = max - min;
+  export let step: number = diff / 256;
+  const keyboardStep: number = diff / 100;
 
-  let knob;
-  let startX, startY, startValue;
+  let knob: HTMLDivElement | undefined;
+  let startX: number | undefined;
+  let startY: number | undefined;
+  let startValue: number;
 
-  function handleStart(event) {
+  function handleStart(event: MouseEvent | TouchEvent): void {
     event.preventDefault();
-    const touch = event.touches ? event.touches[0] : event;
+    const touch = (event as TouchEvent).touches
+      ? (event as TouchEvent).touches[0]
+      : (event as MouseEvent);
     startX = touch.clientX;
     startY = touch.clientY;
     startValue = value;
   }
 
-  function handleMove(event) {
-    if (!startX || !startY) return;
-    const touch = event.touches ? event.touches[0] : event;
-    let deltaY = step * (startY - touch.clientY);
+  function handleMove(event: MouseEvent | TouchEvent): void {
+    if (startX === undefined || startY === undefined) return;
+    const touch = (event as TouchEvent).touches
+      ? (event as TouchEvent).touches[0]
+      : (event as MouseEvent);
+    const deltaY: number = step * (startY - touch.clientY);
     value = Math.max(min, Math.min(max, startValue + deltaY));
   }
 
-  function handleEnd() {
+  function handleEnd(): void {
     startX = undefined;
     startY = undefined;
   }
 
-  function handleKeydown(event) {
+  function handleKeydown(event: KeyboardEvent): void {
     if (event.key === "ArrowUp" || event.key === "ArrowRight") {
       value = Math.min(max, value + keyboardStep);
       event.preventDefault();
@@ -89,30 +95,35 @@
 
 <style lang="scss">
   .knob {
+    position: relative;
     width: 44px;
     height: 44px;
+    border: 3px solid var(--white);
     border-radius: 50%;
+
     display: flex;
-    border: 3px solid white;
     align-items: center;
     justify-content: center;
-    position: relative;
+
     cursor: pointer;
     outline: none;
   }
 
+  // TODO fix this color
   .knob:focus {
     box-shadow: 0 0 0 3px rgba(21, 156, 228, 0.4);
   }
 
   .knob::before {
     content: "";
-    position: absolute;
     width: 3px;
     height: 50%;
-    background: white;
+    background: var(--white);
+
+    position: absolute;
     top: 0;
     left: 50%;
+
     transform: translateX(-50%);
     transform-origin: bottom;
     transition: transform 0.1s;

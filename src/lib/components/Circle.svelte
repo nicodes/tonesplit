@@ -1,6 +1,6 @@
 <script>
   export let radius = 22;
-  export let color = "blue";
+  export let color = "var(--white)";
 </script>
 
 <div
