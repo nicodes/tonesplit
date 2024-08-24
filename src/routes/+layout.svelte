@@ -1,13 +1,14 @@
 <script>
-  import "../app.css";
+	import '@fontsource/righteous';
+	import '../app.css';
 </script>
 
 <div class="app">
-  <!-- <Header /> -->
+	<!-- <Header /> -->
 
-  <slot />
+	<slot />
 
-  <!-- <footer>
+	<!-- <footer>
 		<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
 	</footer> -->
 </div>
