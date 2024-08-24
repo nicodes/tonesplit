@@ -11,7 +11,8 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:integration": "playwright test",
-		"test:unit": "vitest"
+		"test:unit": "vitest",
+		"pwa-assets-generator": "pwa-assets-generator -c pwa-config.ts"
 	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^5.0.0",
@@ -22,6 +23,8 @@
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"@types/eslint": "^9.6.0",
+		"@vite-pwa/assets-generator": "^0.2.4",
+		"@vite-pwa/sveltekit": "^0.6.1",
 		"eslint": "^9.0.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.36.0",
