@@ -6,7 +6,7 @@ import {
     ResolvedAssetSize
   } from '@vite-pwa/assets-generator/config'
   
-const inputImage = 'src/lib/images/svelte-logo.svg'
+const inputImage = 'src/lib/images/tone-split.svg'
 const outputDir = '../../../static/'
 
   export default defineConfig({
