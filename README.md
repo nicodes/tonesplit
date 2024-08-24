@@ -1,3 +1,9 @@
+# Tone ♪ Split
+
+Check it out: https://tonesplit.vercel.app
+
+This is an indie project to control simple oscilators. It can be used to set meditative frequencies, analyse chord frequencies, or anything you wish!
+
 # create-svelte
 
 Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
