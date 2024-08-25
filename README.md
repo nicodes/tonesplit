@@ -1,6 +1,6 @@
 # Tone ♪ Split
 
-Check it out: https://tonesplit.vercel.app
+Check it out: https://www.tonesplit.com
 
 This is an indie project to control simple oscilators. It can be used to set meditative frequencies, analyse chord frequencies, or anything you wish!
 
