@@ -1,10 +1,10 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vitest/config';
-import { SvelteKitPWA } from '@vite-pwa/sveltekit'
+import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 
 export default defineConfig({
 	plugins: [
-		sveltekit(), 
+		sveltekit(),
 		SvelteKitPWA({
 			devOptions: {
 				enabled: true
@@ -13,28 +13,29 @@ export default defineConfig({
 				name: 'Tone Split',
 				short_name: 'Tone Split',
 				description: 'Tone splitting for panning oscillators',
+				// icon names are defined by pwa-assets-generator
 				icons: [
 					{
-					  src: 'pwa-64x64.png',
-					  sizes: '64x64',
-					  type: 'image/png'
+						src: 'pwa-64x64.png',
+						sizes: '64x64',
+						type: 'image/png'
 					},
 					{
-					  src: 'pwa-192x192.png',
-					  sizes: '192x192',
-					  type: 'image/png'
+						src: 'pwa-192x192.png',
+						sizes: '192x192',
+						type: 'image/png'
 					},
 					{
-					  src: 'pwa-512x512.png',
-					  sizes: '512x512',
-					  type: 'image/png',
-					  purpose: 'any'  
+						src: 'pwa-512x512.png',
+						sizes: '512x512',
+						type: 'image/png',
+						purpose: 'any'
 					},
 					{
-					  src: 'maskable-icon-512x512.png',
-					  sizes: '512x512',
-					  type: 'image/png',
-					  purpose: 'maskable'
+						src: 'maskable-icon-512x512.png',
+						sizes: '512x512',
+						type: 'image/png',
+						purpose: 'maskable'
 					}
 				]
 			}

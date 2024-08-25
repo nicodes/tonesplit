@@ -12,7 +12,7 @@
 		"format": "prettier --write .",
 		"test:integration": "playwright test",
 		"test:unit": "vitest",
-		"pwa-assets-generator": "pwa-assets-generator -c pwa-config.ts && mv src/lib/images/favicon.ico static"
+		"pwa-assets-generator": "pwa-assets-generator && mv src/lib/images/favicon.ico static"
 	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^5.0.0",
