@@ -97,7 +97,7 @@
     chartHeight: number,
     index: number
   ) {
-    context.lineWidth = 2;
+    context.lineWidth = 1.5;
     context.strokeStyle = colors[index];
     context.beginPath();
 
@@ -125,7 +125,46 @@
     tones.forEach((tone, index) => {
       if (tone.muted) return;
 
-      tone.analyser.getByteTimeDomainData(tone.dataArray);
+      // tone.analyser.getByteTimeDomainData(tone.dataArray);
+
+      const freq = tone.osc.frequency.value;
+      const type = tone.osc.type;
+      const vol = tone.gain.gain.value;
+      const scaleFactor = 0.05;
+
+      switch (type) {
+        case "sine":
+          for (let i = 0; i < tone.bufferLength; i++) {
+            let sin = Math.sin((i * freq * Math.PI * 2) / tone.bufferLength * scaleFactor);
+            sin = Math.round(127 + vol * sin * 127);
+            tone.dataArray[i] = sin;
+          }
+        break;
+        case "square":
+          for (let i = 0; i < tone.bufferLength; i++) {
+            let square = Math.sin((i * freq * Math.PI * 2) / tone.bufferLength * scaleFactor) > 0 ? 127 : -127;
+            square = Math.round(127 + vol * square);
+            tone.dataArray[i] = square;
+          }
+        break;
+        case "sawtooth":
+          for (let i = 0; i < tone.bufferLength; i++) {
+            let sawtooth = 255 * ((i * freq * scaleFactor) % tone.bufferLength) / tone.bufferLength;
+            const offset = 127 * (vol - 1);
+            sawtooth = Math.round(255 - vol * sawtooth + offset);
+            tone.dataArray[i] = sawtooth;
+          }
+        break;
+        case "triangle":
+          for (let i = 0; i < tone.bufferLength; i++) {
+            let triangle = Math.abs((i * freq * scaleFactor) % tone.bufferLength - tone.bufferLength / 2) / (tone.bufferLength / 2) * 255;
+            const offset = 127 * (1 - vol);
+            triangle = Math.round(vol * triangle + offset);
+            tone.dataArray[i] = triangle;
+          }
+        break;
+      }
+
       const sliceWidth = (canvas.width * 6.0) / tone.bufferLength;
 
       // Draw on the top half for left channel
