@@ -30,6 +30,11 @@
 
   let numberInputMode = false;
 
+  let showCompositeWaveform = false;
+  let compositeWaveForm: Float32Array = new Float32Array(0);
+  
+  let maxVolume = 0;
+
   function toggleNumberInputMode() {
     numberInputMode = !numberInputMode;
   }
@@ -122,6 +127,10 @@
     // Draw the background and divider
     drawBackground();
 
+    if ( tones.length > 0 ) {
+      compositeWaveForm = new Float32Array(tones[0].bufferLength)
+    }
+
     tones.forEach((tone, index) => {
       if (tone.muted) return;
 
@@ -130,6 +139,7 @@
       const freq = tone.osc.frequency.value;
       const type = tone.osc.type;
       const vol = tone.gain.gain.value;
+      maxVolume = Math.max(maxVolume, vol);
       const scaleFactor = 0.05;
 
       switch (type) {
@@ -138,6 +148,7 @@
             let sin = Math.sin((i * freq * Math.PI * 2) / tone.bufferLength * scaleFactor);
             sin = Math.round(127 + vol * sin * 127);
             tone.dataArray[i] = sin;
+            if (showCompositeWaveform) { compositeWaveForm[i] += sin - 127 }
           }
         break;
         case "square":
@@ -145,6 +156,7 @@
             let square = Math.sin((i * freq * Math.PI * 2) / tone.bufferLength * scaleFactor) > 0 ? 127 : -127;
             square = Math.round(127 + vol * square);
             tone.dataArray[i] = square;
+            if (showCompositeWaveform) { compositeWaveForm[i] += square - 127 }
           }
         break;
         case "sawtooth":
@@ -153,6 +165,7 @@
             const offset = 127 * (vol - 1);
             sawtooth = Math.round(255 - vol * sawtooth + offset);
             tone.dataArray[i] = sawtooth;
+            if (showCompositeWaveform) { compositeWaveForm[i] += sawtooth - 127 }
           }
         break;
         case "triangle":
@@ -161,6 +174,7 @@
             const offset = 127 * (1 - vol);
             triangle = Math.round(vol * triangle + offset);
             tone.dataArray[i] = triangle;
+            if (showCompositeWaveform) { compositeWaveForm[i] += triangle - 127 }
           }
         break;
       }
@@ -185,8 +199,41 @@
       }
     });
 
+    if (showCompositeWaveform) {
+      drawCompositeWaveForm(canvasContext, chartHeight / 2, chartHeight);
+    }
+
     // Use requestAnimationFrame to throttle the draw calls
     drawRequestId = requestAnimationFrame(drawWaveform);
+  }
+
+  function drawCompositeWaveForm(
+    context: CanvasRenderingContext2D,
+    startY: number,
+    chartHeight: number
+  ) {
+    const compositeMax = Math.max(...compositeWaveForm);
+
+    compositeWaveForm.forEach((v, i) => {
+      compositeWaveForm[i] = maxVolume * (v / compositeMax) * 255;
+    });
+    
+    const sliceWidth = (canvas.width * 6.0) / compositeWaveForm.length;
+    
+    context.lineWidth = 1.5;
+    context.strokeStyle = "white";
+    context.beginPath();
+
+    let x = 0;
+    for (let i = 0; i < compositeWaveForm.length; i++) {
+      const v = compositeWaveForm[i] / 255;
+
+      const y = startY + (v * chartHeight) / 2;
+      i === 0 ? context.moveTo(x, y) : context.lineTo(x, y);
+      x += sliceWidth;
+    }
+
+    context.stroke();
   }
 
   onMount(() => {
