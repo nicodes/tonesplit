@@ -1,37 +1,37 @@
 @import '@fontsource/fira-mono';
 
 :root {
-	--header-max-width: 900px;
-	--page-max-width: 600px;
+  --header-max-width: 900px;
+  --page-max-width: 600px;
 
-	--font-body: Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
-		Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --font-body: Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 
-	--black: black;
-	--white: white;
+  --black: black;
+  --white: white;
 
-	--space-xs: 5px;
-	--space-sm: 8px;
-	--space-md: 13px;
-	--space-lg: 21px;
-	--space-xl: 34px;
+  --space-xs: 5px;
+  --space-sm: 8px;
+  --space-md: 13px;
+  --space-lg: 21px;
+  --space-xl: 34px;
 
-	--font-xs: 0.8rem;
-	--font-sm: 1rem;
-	--font-md: 1.4rem;
-	--font-lg: 2rem;
-	--font-xl: 2.8rem;
+  --font-xs: 0.8rem;
+  --font-sm: 1rem;
+  --font-md: 1.4rem;
+  --font-lg: 2rem;
+  --font-xl: 2.8rem;
 
-	--border-radius: 2px;
+  --border-radius: 2px;
 
-	background-color: var(--black);
-	color: var(--white);
-	font-family: var(--font-body);
-	font-size: var(--font-sm);
+  background-color: var(--black);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: var(--font-sm);
 }
 
 * {
-	box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 h1,
@@ -41,9 +41,9 @@ h4,
 h5,
 h6,
 p {
-	margin: 0;
+  margin: 0;
 }
 
 a {
-	color: var(--white);
+  color: var(--white);
 }

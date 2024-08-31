@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let value: string | number | undefined = undefined;
+  export let value: string | number | undefined = undefined
 </script>
 
 <select bind:value>
