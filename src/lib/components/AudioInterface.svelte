@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
+
   import chords from '$lib/services/chords'
   import { createTone, stopTone, startTone } from '$lib/services/audio'
   import type { Tone } from '$lib/services/audio'
@@ -29,8 +30,6 @@
 
   let numberInputMode = false
 
-  let keepAlivePromise: Promise<void>
-
   function toggleNumberInputMode() {
     numberInputMode = !numberInputMode
   }
@@ -41,6 +40,7 @@
     if (playing) startTone(audioContext, t)
   }
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   function removeTone(index: number) {
     stopTone(tones[index])
     tones = tones.filter((_, i) => i !== index)
@@ -55,11 +55,9 @@
     if (playing) {
       tones.forEach((t) => stopTone(t))
       cancelAnimationFrame(drawRequestId) // Stop drawing when not playing
-      keepAlivePromise = null // Stop the keep-alive promise
     } else {
       tones.forEach((t) => startTone(audioContext, t))
       drawWaveform() // Start drawing when playing
-      startKeepAlive() // Start the keep-alive promise
     }
     playing = !playing
   }
@@ -155,34 +153,17 @@
     drawRequestId = requestAnimationFrame(drawWaveform)
   }
 
-  function startKeepAlive() {
-    keepAlivePromise = new Promise<void>((resolve, reject) => {
-      const intervalId = setInterval(async () => {
-        if (audioContext.state !== 'running') {
-          try {
-            await audioContext.resume()
-          } catch (error) {
-            console.error('Error resuming AudioContext:', error)
-            clearInterval(intervalId)
-            reject(error)
-          }
-        }
-      }, 1000)
-
-      // Cleanup when promise is resolved or rejected
-      return () => clearInterval(intervalId)
-    })
-  }
-
   onMount(() => {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    audioContext = new (window.AudioContext || window.webkitAudioContext)({
+      latencyHint: 'playback',
+      sampleRate: 44100
+    })
     canvasContext = canvas.getContext('2d')!
   })
 
   onDestroy(() => {
     cancelAnimationFrame(drawRequestId) // Clean up the animation frame on component destroy
     tones.forEach(stopTone) // Stop all tones to free up resources
-    keepAlivePromise = null // Stop the keep-alive promise
   })
 
   $: if (playing) {
