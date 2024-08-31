@@ -1,20 +1,20 @@
 <script>
-	import { pwaInfo } from 'virtual:pwa-info';
-	import '@fontsource/righteous';
+  import { pwaInfo } from 'virtual:pwa-info'
+  import '@fontsource/righteous'
 
-	import Header from '$lib/components/Header.svelte';
-	import '../app.css';
+  import Header from '$lib/components/Header.svelte'
+  import '../app.css'
 
-	$: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : '';
+  $: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : ''
 </script>
 
 <svelte:head>
-	{@html webManifest}
+  {@html webManifest}
 </svelte:head>
 
 <div class="app">
-	<Header />
-	<slot />
+  <Header />
+  <slot />
 </div>
 
 <style>
