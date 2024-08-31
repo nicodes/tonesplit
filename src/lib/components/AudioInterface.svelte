@@ -4,8 +4,9 @@
   let audioContext: AudioContext | null = null
   let oscillator: OscillatorNode | null = null
   let gainNode: GainNode | null = null
-  let silentAudio: AudioBufferSourceNode | null = null
   let playing = false
+
+  let fakeAudioElement: HTMLAudioElement
 
   function createAudioContext() {
     if (!audioContext || audioContext.state === 'closed') {
@@ -13,14 +14,6 @@
         latencyHint: 'interactive',
         sampleRate: 44100
       })
-
-      // Create silent audio buffer
-      const buffer = audioContext.createBuffer(1, 44100 * 2, 44100) // 2 seconds of silence
-      silentAudio = audioContext.createBufferSource()
-      silentAudio.buffer = buffer
-      silentAudio.loop = true
-      silentAudio.connect(audioContext.destination)
-      silentAudio.start(0)
     }
   }
 
@@ -55,13 +48,33 @@
   function togglePlay() {
     playing = !playing
     if (playing) {
+      startFakeAudio()
       startOscillator()
     } else {
+      stopFakeAudio()
       stopOscillator()
     }
   }
 
+  function startFakeAudio() {
+    if (fakeAudioElement) {
+      fakeAudioElement.play()
+    }
+  }
+
+  function stopFakeAudio() {
+    if (fakeAudioElement) {
+      fakeAudioElement.pause()
+      fakeAudioElement.currentTime = 0
+    }
+  }
+
   onMount(() => {
+    fakeAudioElement = new Audio()
+    fakeAudioElement.src =
+      'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgLsAAAB3AQACABAAZGF0YQAAAAA=' // 1-second silent audio
+    fakeAudioElement.loop = true
+
     createAudioContext()
 
     const handleVisibilityChange = () => {
@@ -75,6 +88,7 @@
     window.addEventListener('focus', handleVisibilityChange)
 
     onDestroy(() => {
+      stopFakeAudio()
       stopOscillator()
       if (audioContext) {
         audioContext.close()
