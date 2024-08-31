@@ -168,6 +168,15 @@
   })
 
   $: if (playing) {
+    // attempted fix for ios timeout
+    if (
+      audioContext.state === 'suspended' ||
+      audioContext.state === 'interrupted' ||
+      audioContext.state === 'closed'
+    ) {
+      audioContext.resume()
+    }
+
     tones.forEach((t) => {
       t.osc.frequency.value = t.frequency
       t.osc.type = t.oscType
