@@ -1,6 +1,8 @@
 <script>
 	import { pwaInfo } from 'virtual:pwa-info';
 	import '@fontsource/righteous';
+
+	import Header from '$lib/components/Header.svelte';
 	import '../app.css';
 
 	$: webManifest = pwaInfo ? pwaInfo.webManifest.linkTag : '';
@@ -11,13 +13,8 @@
 </svelte:head>
 
 <div class="app">
-	<!-- <Header /> -->
-
+	<Header />
 	<slot />
-
-	<!-- <footer>
-		<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
-	</footer> -->
 </div>
 
 <style>
