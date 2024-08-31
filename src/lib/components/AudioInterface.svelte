@@ -155,6 +155,7 @@
 
   onMount(() => {
     audioContext = new (window.AudioContext || window.webkitAudioContext)({
+      // These params fixed the crackling when phone screen is off
       latencyHint: 'playback',
       sampleRate: 44100
     })
