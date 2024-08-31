@@ -1,5 +1,9 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
+  import {
+    clearTimeout as clearTimeoutAudio,
+    setTimeout as setTimeoutAudio
+  } from 'audio-context-timers'
 
   import chords from '$lib/services/chords'
   import {
@@ -33,14 +37,14 @@
     selectedChordDefault // Default selected chord
 
   let drawRequestId: number
-  let timeoutId: number
-  let countdownIntervalId: number
+  let audioTimeout: number
+  let countdownInterval: number
   let numberInputMode = false
   let timeout = 5 // Default timeout of 5 seconds
   let applyTimeout = false // Controls whether the timeout is applied
   let timeoutUnit: 'seconds' | 'minutes' | 'hours' = 'seconds' // Default unit
   let remainingTime = '00:00:00' // Default remaining time display
-  let remainingSeconds = 0 // Track remaining seconds
+  let remainingMiliseconds = 0 // Track remaining seconds
 
   function toggleNumberInputMode() {
     numberInputMode = !numberInputMode
@@ -65,53 +69,25 @@
   function playTones() {
     tones.forEach((t) => startTone(audioContext, t))
     drawWaveform() // Start drawing when playing
-    if (applyTimeout && remainingSeconds > 0) {
-      startCountdown(remainingSeconds) // Resume countdown
-      timeoutId = setTimeout(() => {
+    if (applyTimeout && remainingMiliseconds > 0) {
+      startCountdown(remainingMiliseconds) // Resume countdown
+      audioTimeout = setTimeoutAudio(() => {
         togglePlaying() // Stop after remaining time
-      }, remainingSeconds * 1000)
+      }, remainingMiliseconds)
     }
   }
 
   function stopTones() {
     tones.forEach((t) => stopTone(t))
     cancelAnimationFrame(drawRequestId) // Stop drawing when not playing
-    clearTimeout(timeoutId) // Clear any existing timeout when stopping
-    clearInterval(countdownIntervalId) // Pause the countdown
+    clearTimeoutAudio(audioTimeout) // Clear any existing timeout when stopping
+    clearInterval(countdownInterval) // Pause the countdown
   }
 
   function togglePlaying() {
     playing = !playing
     if (playing) playTones()
     else stopTones()
-  }
-
-  function startCountdown(totalSeconds: number) {
-    remainingSeconds = totalSeconds // Initialize remaining seconds
-    remainingTime = formatTimeout(remainingSeconds)
-
-    countdownIntervalId = setInterval(() => {
-      remainingSeconds -= 1
-      remainingTime = formatTimeout(remainingSeconds)
-
-      if (remainingSeconds <= 0) {
-        clearInterval(countdownIntervalId) // Stop countdown when time runs out
-      }
-    }, 1000)
-  }
-
-  function refreshTimer() {
-    clearInterval(countdownIntervalId)
-    const timeoutInSeconds = toMilliseconds(timeout, timeoutUnit) / 1000
-    remainingSeconds = timeoutInSeconds
-    remainingTime = formatTimeout(remainingSeconds)
-    if (playing) {
-      startCountdown(remainingSeconds) // Restart countdown if audio is playing
-      clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => {
-        togglePlaying() // Stop after remaining time
-      }, remainingSeconds * 1000)
-    }
   }
 
   /** Mutes a specific oscillator by index */
@@ -128,6 +104,32 @@
       ...chords[chord].map((frequency) => createTone({ frequency }))
     ]
     if (playing) tones.forEach((t) => startTone(audioContext, t))
+  }
+
+  function startCountdown(totalMiliseconds: number) {
+    remainingMiliseconds = totalMiliseconds // Initialize remaining seconds
+    remainingTime = formatTimeout(remainingMiliseconds)
+
+    countdownInterval = setInterval(() => {
+      remainingMiliseconds -= 1000
+      remainingTime = formatTimeout(remainingMiliseconds)
+
+      if (remainingMiliseconds <= 0) {
+        clearInterval(countdownInterval) // Stop countdown when time runs out
+      }
+    }, 1000)
+  }
+
+  function refreshTimer() {
+    clearInterval(countdownInterval)
+    const timeoutInMiliseconds = toMilliseconds(timeout, timeoutUnit)
+    remainingMiliseconds = timeoutInMiliseconds
+    remainingTime = formatTimeout(remainingMiliseconds)
+    if (playing) {
+      startCountdown(remainingMiliseconds) // Restart countdown if audio is playing
+      clearTimeoutAudio(audioTimeout)
+      audioTimeout = setTimeoutAudio(togglePlaying, remainingMiliseconds)
+    }
   }
 
   function drawBackground() {
@@ -210,8 +212,8 @@
 
   onDestroy(() => {
     cancelAnimationFrame(drawRequestId) // Clean up the animation frame on component destroy
-    clearTimeout(timeoutId) // Clear the timeout on destroy
-    clearInterval(countdownIntervalId) // Clear the countdown interval
+    clearTimeoutAudio(audioTimeout) // Clear the timeout on destroy
+    clearInterval(countdownInterval) // Clear the countdown interval
     tones.forEach(stopTone) // Stop all tones to free up resources
   })
 
