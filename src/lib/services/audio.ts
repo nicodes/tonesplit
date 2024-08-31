@@ -61,3 +61,27 @@ export function startTone(audioContext: AudioContext, tone: Tone) {
 export function stopTone(tone: Tone) {
   tone.osc?.stop(0)
 }
+
+export function toMilliseconds(
+  timeout: number,
+  unit: 'seconds' | 'minutes' | 'hours'
+) {
+  switch (unit) {
+    case 'minutes':
+      return timeout * 60 * 1000
+    case 'hours':
+      return timeout * 60 * 60 * 1000
+    case 'seconds':
+    default:
+      return timeout * 1000
+  }
+}
+
+export function formatTimeout(milliseconds: number) {
+  const totalSeconds = Math.floor(milliseconds / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const secs = Math.floor(totalSeconds % 60)
+
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+}
