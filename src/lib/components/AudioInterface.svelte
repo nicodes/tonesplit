@@ -25,6 +25,7 @@
 
   let drawRequestId: number
   let numberInputMode = false
+  let silentLoopSource: AudioBufferSourceNode | null = null
 
   function toggleNumberInputMode() {
     numberInputMode = !numberInputMode
@@ -36,6 +37,11 @@
     if (playing) startTone(audioContext, t)
   }
 
+  function removeTone(index: number) {
+    stopTone(tones[index])
+    tones = tones.filter((_, i) => i !== index)
+  }
+
   function removeAllTones() {
     tones.forEach(stopTone)
     tones = []
@@ -45,9 +51,11 @@
     if (playing) {
       tones.forEach((t) => stopTone(t))
       cancelAnimationFrame(drawRequestId)
+      stopSilentLoop()
     } else {
       tones.forEach((t) => startTone(audioContext, t))
       drawWaveform()
+      startSilentLoop()
     }
     playing = !playing
   }
@@ -125,6 +133,30 @@
     drawRequestId = requestAnimationFrame(drawWaveform)
   }
 
+  function startSilentLoop() {
+    if (!audioContext) return
+
+    const buffer = audioContext.createBuffer(1, 44100, 44100)
+    const output = buffer.getChannelData(0)
+    for (let i = 0; i < 44100; i++) {
+      output[i] = 0
+    }
+
+    silentLoopSource = audioContext.createBufferSource()
+    silentLoopSource.buffer = buffer
+    silentLoopSource.loop = true
+    silentLoopSource.connect(audioContext.destination)
+    silentLoopSource.start(0)
+  }
+
+  function stopSilentLoop() {
+    if (silentLoopSource) {
+      silentLoopSource.stop(0)
+      silentLoopSource.disconnect()
+      silentLoopSource = null
+    }
+  }
+
   onMount(() => {
     audioContext = new (window.AudioContext || window.webkitAudioContext)({
       latencyHint: 'playback',
@@ -133,7 +165,6 @@
 
     canvasContext = canvas.getContext('2d')!
 
-    // Handle audio context resume on visibility change (especially for iOS)
     const handleVisibilityChange = () => {
       if (
         document.visibilityState === 'visible' &&
@@ -151,6 +182,7 @@
       window.removeEventListener('focus', handleVisibilityChange)
       cancelAnimationFrame(drawRequestId)
       tones.forEach(stopTone)
+      stopSilentLoop()
     })
   })
 
