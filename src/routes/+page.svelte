@@ -1,17 +1,20 @@
 <script>
-  import AudioInterface from "$lib/components/AudioInterface.svelte";
-  import Title from "$lib/components/Title.svelte";
+	import AudioInterface from '$lib/components/AudioInterface.svelte';
 </script>
 
 <svelte:head>
-  <title>Home</title>
-  <meta name="description" content="Svelte demo app" />
+	<title>Home</title>
+	<meta name="description" content="Svelte demo app" />
 </svelte:head>
 
-<main>
-  <Title />
-  <AudioInterface />
+<main class="main">
+	<AudioInterface />
 </main>
 
 <style>
+	.main {
+		margin: auto;
+		margin-top: var(--space-xl);
+		max-width: var(--page-max-width);
+	}
 </style>
