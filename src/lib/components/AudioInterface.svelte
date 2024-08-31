@@ -29,7 +29,7 @@
 
   let numberInputMode = false
 
-  let audioWorker: Worker
+  let keepAlivePromise: Promise<void>
 
   function toggleNumberInputMode() {
     numberInputMode = !numberInputMode
@@ -55,9 +55,11 @@
     if (playing) {
       tones.forEach((t) => stopTone(t))
       cancelAnimationFrame(drawRequestId) // Stop drawing when not playing
+      keepAlivePromise = null // Stop the keep-alive promise
     } else {
       tones.forEach((t) => startTone(audioContext, t))
       drawWaveform() // Start drawing when playing
+      startKeepAlive() // Start the keep-alive promise
     }
     playing = !playing
   }
@@ -153,19 +155,34 @@
     drawRequestId = requestAnimationFrame(drawWaveform)
   }
 
+  function startKeepAlive() {
+    keepAlivePromise = new Promise<void>((resolve, reject) => {
+      const intervalId = setInterval(async () => {
+        if (audioContext.state !== 'running') {
+          try {
+            await audioContext.resume()
+          } catch (error) {
+            console.error('Error resuming AudioContext:', error)
+            clearInterval(intervalId)
+            reject(error)
+          }
+        }
+      }, 1000)
+
+      // Cleanup when promise is resolved or rejected
+      return () => clearInterval(intervalId)
+    })
+  }
+
   onMount(() => {
     audioContext = new (window.AudioContext || window.webkitAudioContext)()
     canvasContext = canvas.getContext('2d')!
-
-    // Initialize Web Worker
-    audioWorker = new Worker(new URL('./audioWorker.ts', import.meta.url))
-    audioWorker.postMessage({ action: 'setContext', audioContext })
   })
 
   onDestroy(() => {
     cancelAnimationFrame(drawRequestId) // Clean up the animation frame on component destroy
     tones.forEach(stopTone) // Stop all tones to free up resources
-    audioWorker.terminate() // Terminate the worker on destroy
+    keepAlivePromise = null // Stop the keep-alive promise
   })
 
   $: if (playing) {
