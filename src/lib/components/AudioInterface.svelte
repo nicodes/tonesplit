@@ -9,7 +9,7 @@
 
   const colors = ['orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
 
-  let audioContext: AudioContext
+  let audioContext: AudioContext | null = null
   let tones: Tone[] = [
     createTone({ frequency: 108, pan: -1 }),
     createTone({ frequency: 111, pan: -1 }),
@@ -25,13 +25,15 @@
 
   let drawRequestId: number
   let numberInputMode = false
+  let silentLoopSource: AudioBufferSourceNode | null = null
 
-  // Function to resume the AudioContext
-  function ensureAudioContextRunning() {
-    if (audioContext.state !== 'running') {
-      audioContext
-        .resume()
-        .catch((error) => console.error('AudioContext resume failed:', error))
+  function initializeAudioContext() {
+    if (!audioContext || audioContext.state === 'closed') {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)({
+        latencyHint: 'interactive',
+        sampleRate: 44100
+      })
+      startSilentLoop()
     }
   }
 
@@ -42,7 +44,7 @@
   function addTone() {
     const t = createTone()
     tones = [...tones, t]
-    if (playing) startTone(audioContext, t)
+    if (playing) startTone(audioContext!, t)
   }
 
   function removeTone(index: number) {
@@ -59,19 +61,19 @@
     if (playing) {
       tones.forEach((t) => stopTone(t))
       cancelAnimationFrame(drawRequestId)
+      stopSilentLoop()
     } else {
-      tones.forEach((t) => startTone(audioContext, t))
+      initializeAudioContext()
+      tones.forEach((t) => startTone(audioContext!, t))
       drawWaveform()
     }
     playing = !playing
-    ensureAudioContextRunning()
   }
 
   function toggleMute(index: number) {
-    if (tones[index].muted) startTone(audioContext, tones[index])
+    if (tones[index].muted) startTone(audioContext!, tones[index])
     else stopTone(tones[index])
     tones[index].muted = !tones[index].muted
-    ensureAudioContextRunning()
   }
 
   function playChord(chord: keyof typeof chords) {
@@ -80,8 +82,7 @@
       ...tones,
       ...chords[chord].map((frequency) => createTone({ frequency }))
     ]
-    if (playing) tones.forEach((t) => startTone(audioContext, t))
-    ensureAudioContextRunning()
+    if (playing) tones.forEach((t) => startTone(audioContext!, t))
   }
 
   function drawBackground() {
@@ -142,38 +143,67 @@
     drawRequestId = requestAnimationFrame(drawWaveform)
   }
 
+  function startSilentLoop() {
+    if (!audioContext) return
+
+    const buffer = audioContext.createBuffer(1, 44100 * 10, 44100) // 10 seconds of silence
+    const output = buffer.getChannelData(0)
+    for (let i = 0; i < output.length; i++) {
+      output[i] = 0 // Fill with silence
+    }
+
+    silentLoopSource = audioContext.createBufferSource()
+    silentLoopSource.buffer = buffer
+    silentLoopSource.loop = true
+    silentLoopSource.connect(audioContext.destination)
+    silentLoopSource.start(0)
+  }
+
+  function stopSilentLoop() {
+    if (silentLoopSource) {
+      silentLoopSource.stop(0)
+      silentLoopSource.disconnect()
+      silentLoopSource = null
+    }
+  }
+
   onMount(() => {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)({
-      latencyHint: 'interactive',
-      sampleRate: 44100
-    })
+    initializeAudioContext()
 
     canvasContext = canvas.getContext('2d')!
 
-    // Ensure AudioContext is running on visibility change and focus
     const handleVisibilityChange = () => {
-      ensureAudioContextRunning()
+      if (document.visibilityState === 'visible') {
+        initializeAudioContext()
+      }
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
     window.addEventListener('focus', handleVisibilityChange)
 
-    // Keep checking if the AudioContext gets suspended and try to resume it
     const audioContextChecker = setInterval(() => {
-      ensureAudioContextRunning()
-    }, 1000) // check every second
+      if (audioContext && audioContext.state !== 'running') {
+        initializeAudioContext()
+      }
+    }, 1000)
 
     onDestroy(() => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       window.removeEventListener('focus', handleVisibilityChange)
       cancelAnimationFrame(drawRequestId)
       tones.forEach(stopTone)
-      clearInterval(audioContextChecker) // stop checking when component is destroyed
+      clearInterval(audioContextChecker)
+      stopSilentLoop()
+      if (audioContext) {
+        audioContext.close()
+      }
     })
   })
 
   $: if (playing) {
-    ensureAudioContextRunning()
+    if (audioContext && audioContext.state !== 'running') {
+      initializeAudioContext()
+    }
     tones.forEach((t) => {
       t.osc.frequency.value = t.frequency
       t.osc.type = t.oscType
