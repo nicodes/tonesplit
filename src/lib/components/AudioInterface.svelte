@@ -70,10 +70,7 @@
   }
 
   onMount(() => {
-    fakeAudioElement = new Audio()
-    fakeAudioElement.src =
-      'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgLsAAAB3AQACABAAZGF0YQAAAAA=' // 1-second silent audio
-    fakeAudioElement.loop = true
+    fakeAudioElement = document.getElementById('fakeAudio') as HTMLAudioElement
 
     createAudioContext()
 
@@ -106,6 +103,13 @@
   </button>
 </div>
 
+<audio id="fakeAudio" loop>
+  <source
+    src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgLsAAAB3AQACABAAZGF0YQAAAAA="
+    type="audio/wav"
+  />
+</audio>
+
 <style>
   .controls {
     display: flex;
@@ -121,5 +125,9 @@
     border-radius: 5px;
     background-color: #f0f0f0;
     color: #333;
+  }
+
+  audio {
+    display: none;
   }
 </style>
