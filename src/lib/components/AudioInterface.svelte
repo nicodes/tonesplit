@@ -1,14 +1,14 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
-  import {
-    clearInterval,
-    clearTimeout,
-    setInterval,
-    setTimeout
-  } from 'audio-context-timers'
 
   import chords from '$lib/services/chords'
-  import { createTone, stopTone, startTone } from '$lib/services/audio'
+  import {
+    createTone,
+    stopTone,
+    startTone,
+    toMilliseconds,
+    formatTimeout
+  } from '$lib/services/audio'
   import type { Tone } from '$lib/services/audio'
 
   import Dial from './Dial.svelte'
@@ -34,8 +34,13 @@
 
   let drawRequestId: number
   let timeoutId: number
+  let countdownIntervalId: number
   let numberInputMode = false
-  let timeout = 5 // Default timeout of 5 seconds, can be overridden by prop
+  let timeout = 5 // Default timeout of 5 seconds
+  let applyTimeout = false // Controls whether the timeout is applied
+  let timeoutUnit: 'seconds' | 'minutes' | 'hours' = 'seconds' // Default unit
+  let remainingTime = '00:00:00' // Default remaining time display
+  let remainingSeconds = 0 // Track remaining seconds
 
   function toggleNumberInputMode() {
     numberInputMode = !numberInputMode
@@ -57,24 +62,62 @@
     tones = []
   }
 
-  function togglePlaying() {
-    if (playing) {
-      tones.forEach((t) => stopTone(t))
-      cancelAnimationFrame(drawRequestId) // Stop drawing when not playing
-      clearTimeout(timeoutId) // Clear any existing timeout when stopping
-    } else {
-      tones.forEach((t) => startTone(audioContext, t))
-      drawWaveform() // Start drawing when playing
+  function playTones() {
+    tones.forEach((t) => startTone(audioContext, t))
+    drawWaveform() // Start drawing when playing
+    if (applyTimeout && remainingSeconds > 0) {
+      startCountdown(remainingSeconds) // Resume countdown
       timeoutId = setTimeout(() => {
-        togglePlaying() // Stop after X seconds
-      }, timeout * 1000) // Convert seconds to milliseconds
+        togglePlaying() // Stop after remaining time
+      }, remainingSeconds * 1000)
     }
-    playing = !playing
   }
 
+  function stopTones() {
+    tones.forEach((t) => stopTone(t))
+    cancelAnimationFrame(drawRequestId) // Stop drawing when not playing
+    clearTimeout(timeoutId) // Clear any existing timeout when stopping
+    clearInterval(countdownIntervalId) // Pause the countdown
+  }
+
+  function togglePlaying() {
+    playing = !playing
+    if (playing) playTones()
+    else stopTones()
+  }
+
+  function startCountdown(totalSeconds: number) {
+    remainingSeconds = totalSeconds // Initialize remaining seconds
+    remainingTime = formatTimeout(remainingSeconds)
+
+    countdownIntervalId = setInterval(() => {
+      remainingSeconds -= 1
+      remainingTime = formatTimeout(remainingSeconds)
+
+      if (remainingSeconds <= 0) {
+        clearInterval(countdownIntervalId) // Stop countdown when time runs out
+      }
+    }, 1000)
+  }
+
+  function refreshTimer() {
+    clearInterval(countdownIntervalId)
+    const timeoutInSeconds = toMilliseconds(timeout, timeoutUnit) / 1000
+    remainingSeconds = timeoutInSeconds
+    remainingTime = formatTimeout(remainingSeconds)
+    if (playing) {
+      startCountdown(remainingSeconds) // Restart countdown if audio is playing
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        togglePlaying() // Stop after remaining time
+      }, remainingSeconds * 1000)
+    }
+  }
+
+  /** Mutes a specific oscillator by index */
   function toggleMute(index: number) {
     if (tones[index].muted) startTone(audioContext, tones[index])
-    else stopTone(tones[index])
+    else stopTone(audioContext, tones[index])
     tones[index].muted = !tones[index].muted
   }
 
@@ -168,6 +211,7 @@
   onDestroy(() => {
     cancelAnimationFrame(drawRequestId) // Clean up the animation frame on component destroy
     clearTimeout(timeoutId) // Clear the timeout on destroy
+    clearInterval(countdownIntervalId) // Clear the countdown interval
     tones.forEach(stopTone) // Stop all tones to free up resources
   })
 
@@ -257,9 +301,28 @@
   </button>
 
   <div>
-    <label for="timeout">Timeout (seconds):</label>
+    <label for="timeout">Timeout:</label>
     <input id="timeout" type="number" bind:value={timeout} min={1} step="1" />
+    <Select bind:value={timeoutUnit}>
+      <option value="seconds">Seconds</option>
+      <option value="minutes">Minutes</option>
+      <option value="hours">Hours</option>
+    </Select>
+    <input
+      id="applyTimeout"
+      type="checkbox"
+      bind:checked={applyTimeout}
+      on:change={refreshTimer}
+    />
+    <label for="applyTimeout">Apply Timeout</label>
   </div>
+
+  {#if applyTimeout}
+    <div class="countdown">
+      Time Remaining: {remainingTime}
+    </div>
+    <button on:click={refreshTimer}>Refresh Timer</button>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -300,5 +363,12 @@
     & > :first-child {
       display: flex;
     }
+  }
+
+  .countdown {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    margin-top: 10px;
   }
 </style>
