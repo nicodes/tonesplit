@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
   import {
+    setInterval as setIntervalAudio,
+    clearInterval as clearIntervalAudio,
     clearTimeout as clearTimeoutAudio,
     setTimeout as setTimeoutAudio
   } from 'audio-context-timers'
@@ -81,7 +83,7 @@
     tones.forEach((t) => stopTone(t))
     cancelAnimationFrame(drawRequestId) // Stop drawing when not playing
     clearTimeoutAudio(audioTimeout) // Clear any existing timeout when stopping
-    clearInterval(countdownInterval) // Pause the countdown
+    clearIntervalAudio(countdownInterval) // Pause the countdown
   }
 
   function togglePlaying() {
@@ -110,7 +112,7 @@
     remainingMiliseconds = totalMiliseconds // Initialize remaining seconds
     remainingTime = formatTimeout(remainingMiliseconds)
 
-    countdownInterval = setInterval(() => {
+    countdownInterval = setIntervalAudio(() => {
       remainingMiliseconds -= 1000
       remainingTime = formatTimeout(remainingMiliseconds)
 
