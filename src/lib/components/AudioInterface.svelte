@@ -40,6 +40,7 @@
     if (playing) startTone(audioContext, t)
   }
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   function removeTone(index: number) {
     stopTone(tones[index])
     tones = tones.filter((_, i) => i !== index)
@@ -107,7 +108,9 @@
       // if (Math.abs(v) < 0.01) return;
 
       const y = startY + (v * chartHeight) / 2
-      i === 0 ? context.moveTo(x, y) : context.lineTo(x, y)
+      if (i === 0) context.moveTo(x, y)
+      else context.lineTo(x, y)
+
       x += sliceWidth
     }
     // context.lineTo(canvas.width, startY + chartHeight / 2);

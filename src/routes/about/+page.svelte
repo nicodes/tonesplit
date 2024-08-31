@@ -1,7 +1,3 @@
-<script>
-  import AudioInterface from '$lib/components/AudioInterface.svelte'
-</script>
-
 <svelte:head>
   <title>Home</title>
   <meta name="description" content="Svelte demo app" />

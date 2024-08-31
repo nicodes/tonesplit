@@ -8,8 +8,9 @@
     "test": "npm run test:integration && npm run test:unit",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "lint": "prettier --check . && eslint .",
-    "format": "prettier --write .",
+    "lint": "eslint .",
+    "format:check": "prettier . --check",
+    "format:write": "prettier . --write",
     "test:integration": "playwright test",
     "test:unit": "vitest",
     "pwa-assets-generator": "pwa-assets-generator && mv src/lib/images/favicon.ico static"
