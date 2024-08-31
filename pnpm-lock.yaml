@@ -35,6 +35,9 @@ devDependencies:
   '@vite-pwa/sveltekit':
     specifier: ^0.6.1
     version: 0.6.1(@sveltejs/kit@2.5.25)(@vite-pwa/assets-generator@0.2.4)(vite-plugin-pwa@0.20.2)
+  audio-context-timers:
+    specifier: ^5.0.117
+    version: 5.0.117
   eslint:
     specifier: ^9.9.1
     version: 9.9.1
@@ -2327,6 +2330,23 @@ packages:
     engines: {node: '>= 4.0.0'}
     dev: true
 
+  /audio-context-timers@5.0.117:
+    resolution: {integrity: sha512-bBb48zAFFQhOkTnU2FiObU2o3FnTUXaIn8V1wwhF9yNHSxHMGYHr+HEtOf+absgadB1tNvg8azQg7VBF/tY/7w==}
+    dependencies:
+      '@babel/runtime': 7.25.6
+      fast-unique-numbers: 9.0.8
+      standardized-audio-context: 25.3.76
+      tslib: 2.7.0
+    dev: true
+
+  /automation-events@7.0.8:
+    resolution: {integrity: sha512-AxrBwgV6jluoyFCTich5u1SzCS5pie3X71A9W0mijK34/KOh7ch3ruPoP8ikwrcZz3CgmCMQybp4YLTj8giX7g==}
+    engines: {node: '>=18.2.0'}
+    dependencies:
+      '@babel/runtime': 7.25.6
+      tslib: 2.7.0
+    dev: true
+
   /available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
@@ -3187,6 +3207,14 @@ packages:
 
   /fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
+    dev: true
+
+  /fast-unique-numbers@9.0.8:
+    resolution: {integrity: sha512-4InhXOXWm8LAYpxC4h9W4Yh3Mq86xVHRxuAxkf9zeA1GEZWFkXoNeQh37aLgcGoce/lcpRyXSDIuAqUhXGZh7g==}
+    engines: {node: '>=18.2.0'}
+    dependencies:
+      '@babel/runtime': 7.25.6
+      tslib: 2.7.0
     dev: true
 
   /fast-uri@3.0.1:
@@ -4832,6 +4860,14 @@ packages:
 
   /stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
+    dev: true
+
+  /standardized-audio-context@25.3.76:
+    resolution: {integrity: sha512-JEoloo9km718O9qYpIUu3AFwZkPosbCAZL6itJnshJQCDomse1AC5QLtuMMDWfkhdHmOUpyFQFpW2EUfZHsSXA==}
+    dependencies:
+      '@babel/runtime': 7.25.6
+      automation-events: 7.0.8
+      tslib: 2.7.0
     dev: true
 
   /std-env@3.7.0:

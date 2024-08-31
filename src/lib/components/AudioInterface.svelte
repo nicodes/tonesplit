@@ -1,5 +1,11 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
+  import {
+    clearInterval,
+    clearTimeout,
+    setInterval,
+    setTimeout
+  } from 'audio-context-timers'
 
   import chords from '$lib/services/chords'
   import { createTone, stopTone, startTone } from '$lib/services/audio'
@@ -27,8 +33,9 @@
     selectedChordDefault // Default selected chord
 
   let drawRequestId: number
-
+  let timeoutId: number
   let numberInputMode = false
+  let timeout = 5 // Default timeout of 5 seconds, can be overridden by prop
 
   function toggleNumberInputMode() {
     numberInputMode = !numberInputMode
@@ -40,7 +47,6 @@
     if (playing) startTone(audioContext, t)
   }
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   function removeTone(index: number) {
     stopTone(tones[index])
     tones = tones.filter((_, i) => i !== index)
@@ -55,9 +61,13 @@
     if (playing) {
       tones.forEach((t) => stopTone(t))
       cancelAnimationFrame(drawRequestId) // Stop drawing when not playing
+      clearTimeout(timeoutId) // Clear any existing timeout when stopping
     } else {
       tones.forEach((t) => startTone(audioContext, t))
       drawWaveform() // Start drawing when playing
+      timeoutId = setTimeout(() => {
+        togglePlaying() // Stop after X seconds
+      }, timeout * 1000) // Convert seconds to milliseconds
     }
     playing = !playing
   }
@@ -105,15 +115,12 @@
     let x = 0
     for (let i = 0; i < tone.bufferLength; i++) {
       const v = tone.dataArray[i] / 128.0
-      // if (Math.abs(v) < 0.01) return;
-
       const y = startY + (v * chartHeight) / 2
       if (i === 0) context.moveTo(x, y)
       else context.lineTo(x, y)
 
       x += sliceWidth
     }
-    // context.lineTo(canvas.width, startY + chartHeight / 2);
     context.stroke()
   }
 
@@ -160,6 +167,7 @@
 
   onDestroy(() => {
     cancelAnimationFrame(drawRequestId) // Clean up the animation frame on component destroy
+    clearTimeout(timeoutId) // Clear the timeout on destroy
     tones.forEach(stopTone) // Stop all tones to free up resources
   })
 
@@ -247,6 +255,11 @@
   <button on:click={togglePlaying}>
     {#if playing}🟥{:else}🟢{/if}
   </button>
+
+  <div>
+    <label for="timeout">Timeout (seconds):</label>
+    <input id="timeout" type="number" bind:value={timeout} min={1} step="1" />
+  </div>
 </div>
 
 <style lang="scss">
