@@ -1,10 +1,8 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
-
   import chords from '$lib/services/chords'
   import { createTone, stopTone, startTone } from '$lib/services/audio'
   import type { Tone } from '$lib/services/audio'
-
   import Dial from './Dial.svelte'
   import Select from './Select.svelte'
   import Circle from './Circle.svelte'
@@ -15,7 +13,6 @@
   let tones: Tone[] = [
     createTone({ frequency: 108, pan: -1 }),
     createTone({ frequency: 111, pan: -1 }),
-
     createTone({ frequency: 114, pan: 1 }),
     createTone({ frequency: 117, pan: 1 })
   ]
@@ -24,10 +21,9 @@
   let playing = false
   const selectedChordDefault = '-- chord --'
   let selectedChord: typeof selectedChordDefault | keyof typeof chords =
-    selectedChordDefault // Default selected chord
+    selectedChordDefault
 
   let drawRequestId: number
-
   let numberInputMode = false
 
   function toggleNumberInputMode() {
@@ -40,7 +36,6 @@
     if (playing) startTone(audioContext, t)
   }
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   function removeTone(index: number) {
     stopTone(tones[index])
     tones = tones.filter((_, i) => i !== index)
@@ -54,10 +49,10 @@
   function togglePlaying() {
     if (playing) {
       tones.forEach((t) => stopTone(t))
-      cancelAnimationFrame(drawRequestId) // Stop drawing when not playing
+      cancelAnimationFrame(drawRequestId)
     } else {
       tones.forEach((t) => startTone(audioContext, t))
-      drawWaveform() // Start drawing when playing
+      drawWaveform()
     }
     playing = !playing
   }
@@ -80,9 +75,7 @@
   function drawBackground() {
     const chartHeight = canvas.height / 2
     canvasContext.clearRect(0, 0, canvas.width, canvas.height)
-
-    // Draw the separating border between the channels
-    canvasContext.strokeStyle = 'white' // Black border
+    canvasContext.strokeStyle = 'white'
     canvasContext.lineWidth = 2
     canvasContext.beginPath()
     canvasContext.moveTo(0, chartHeight)
@@ -101,42 +94,28 @@
     context.lineWidth = 2
     context.strokeStyle = colors[index]
     context.beginPath()
-
     let x = 0
     for (let i = 0; i < tone.bufferLength; i++) {
       const v = tone.dataArray[i] / 128.0
-      // if (Math.abs(v) < 0.01) return;
-
       const y = startY + (v * chartHeight) / 2
       if (i === 0) context.moveTo(x, y)
       else context.lineTo(x, y)
-
       x += sliceWidth
     }
-    // context.lineTo(canvas.width, startY + chartHeight / 2);
     context.stroke()
   }
 
   function drawWaveform() {
     if (!playing) return
-
     const chartHeight = canvas.height / 2
-
-    // Draw the background and divider
     drawBackground()
-
     tones.forEach((tone, index) => {
       if (tone.muted) return
-
       tone.analyser.getByteTimeDomainData(tone.dataArray)
       const sliceWidth = (canvas.width * 6.0) / tone.bufferLength
-
-      // Draw on the top half for left channel
       if (tone.pan <= 0) {
         drawChannel(canvasContext, sliceWidth, tone, 0, chartHeight, index)
       }
-
-      // Draw on the bottom half for right channel
       if (tone.pan >= 0) {
         drawChannel(
           canvasContext,
@@ -148,33 +127,45 @@
         )
       }
     })
-
-    // Use requestAnimationFrame to throttle the draw calls
     drawRequestId = requestAnimationFrame(drawWaveform)
   }
 
   onMount(() => {
     audioContext = new (window.AudioContext || window.webkitAudioContext)({
-      // These params fixed the crackling when phone screen is off
       latencyHint: 'playback',
       sampleRate: 44100
     })
-    canvasContext = canvas.getContext('2d')!
-  })
 
-  onDestroy(() => {
-    cancelAnimationFrame(drawRequestId) // Clean up the animation frame on component destroy
-    tones.forEach(stopTone) // Stop all tones to free up resources
+    canvasContext = canvas.getContext('2d')!
+
+    // Handle audio context resume on visibility change (especially for iOS)
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        audioContext.state !== 'running'
+      ) {
+        audioContext.resume().catch(console.error)
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleVisibilityChange)
+
+    onDestroy(() => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleVisibilityChange)
+      cancelAnimationFrame(drawRequestId)
+      tones.forEach(stopTone)
+    })
   })
 
   $: if (playing) {
-    // attempted fix for ios timeout
     if (
       audioContext.state === 'suspended' ||
       audioContext.state === 'interrupted' ||
       audioContext.state === 'closed'
     ) {
-      audioContext.resume()
+      audioContext.resume().catch(console.error)
     }
 
     tones.forEach((t) => {
@@ -189,7 +180,6 @@
 
 <div class="audioController">
   <canvas bind:this={canvas} width="300" height="160" class="canvas"></canvas>
-
   <div class="grid">
     {#if tones.length > 0}
       <div></div>
@@ -197,19 +187,16 @@
       <div><strong>Freq</strong></div>
       <div><strong>Vol</strong></div>
       <div><strong>Pan</strong></div>
-
       {#each tones as t, i}
         <button on:click={() => toggleMute(i)}>
           <Circle radius={8} color={t.muted ? 'red' : colors[i]} />
         </button>
-
         <Select bind:value={t.oscType}>
           <option value="sine">Sine</option>
           <option value="square">Square</option>
           <option value="sawtooth">Sawtooth</option>
           <option value="triangle">Triangle</option>
         </Select>
-
         {#if numberInputMode}
           <input type="number" bind:value={t.frequency} min={0} max={2000} />
           <input
@@ -233,7 +220,6 @@
         {/if}
       {/each}
     {/if}
-
     <button
       on:click={() =>
         selectedChord === selectedChordDefault
@@ -242,21 +228,18 @@
     >
       ➕
     </button>
-
     <Select bind:value={selectedChord}>
       <option value={selectedChordDefault}>{selectedChordDefault}</option>
       {#each Object.keys(chords) as c}
         <option value={c}>{c}</option>
       {/each}
     </Select>
-
     <div></div>
     <button on:click={toggleNumberInputMode}>
       {#if numberInputMode}Dials{:else}Edit{/if}
     </button>
     <button on:click={removeAllTones}>❌</button>
   </div>
-
   <button on:click={togglePlaying}>
     {#if playing}🟥{:else}🟢{/if}
   </button>
@@ -272,12 +255,10 @@
     button {
       min-height: 44px;
       min-width: 44px;
-
       background-color: transparent;
       border: 2px solid white;
       border-radius: 8px;
       color: white;
-
       display: flex;
       align-items: center;
       justify-content: center;
@@ -294,11 +275,5 @@
     grid-template-columns: min-content auto min-content min-content min-content;
     align-items: center;
     gap: 12px;
-  }
-
-  .subgrid {
-    & > :first-child {
-      display: flex;
-    }
   }
 </style>
