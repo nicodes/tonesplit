@@ -36,11 +36,6 @@
     if (playing) startTone(audioContext, t)
   }
 
-  function removeTone(index: number) {
-    stopTone(tones[index])
-    tones = tones.filter((_, i) => i !== index)
-  }
-
   function removeAllTones() {
     tones.forEach(stopTone)
     tones = []
