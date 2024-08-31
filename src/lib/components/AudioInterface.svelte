@@ -15,7 +15,6 @@
   let tones: Tone[] = [
     createTone({ frequency: 108, pan: -1 }),
     createTone({ frequency: 111, pan: -1 }),
-
     createTone({ frequency: 114, pan: 1 }),
     createTone({ frequency: 117, pan: 1 })
   ]
@@ -24,10 +23,9 @@
   let playing = false
   const selectedChordDefault = '-- chord --'
   let selectedChord: typeof selectedChordDefault | keyof typeof chords =
-    selectedChordDefault // Default selected chord
+    selectedChordDefault
 
   let drawRequestId: number
-
   let numberInputMode = false
 
   function toggleNumberInputMode() {
@@ -40,7 +38,6 @@
     if (playing) startTone(audioContext, t)
   }
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   function removeTone(index: number) {
     stopTone(tones[index])
     tones = tones.filter((_, i) => i !== index)
@@ -54,10 +51,10 @@
   function togglePlaying() {
     if (playing) {
       tones.forEach((t) => stopTone(t))
-      cancelAnimationFrame(drawRequestId) // Stop drawing when not playing
+      cancelAnimationFrame(drawRequestId)
     } else {
       tones.forEach((t) => startTone(audioContext, t))
-      drawWaveform() // Start drawing when playing
+      drawWaveform()
     }
     playing = !playing
   }
@@ -81,8 +78,7 @@
     const chartHeight = canvas.height / 2
     canvasContext.clearRect(0, 0, canvas.width, canvas.height)
 
-    // Draw the separating border between the channels
-    canvasContext.strokeStyle = 'white' // Black border
+    canvasContext.strokeStyle = 'white'
     canvasContext.lineWidth = 2
     canvasContext.beginPath()
     canvasContext.moveTo(0, chartHeight)
@@ -105,15 +101,12 @@
     let x = 0
     for (let i = 0; i < tone.bufferLength; i++) {
       const v = tone.dataArray[i] / 128.0
-      // if (Math.abs(v) < 0.01) return;
-
       const y = startY + (v * chartHeight) / 2
       if (i === 0) context.moveTo(x, y)
       else context.lineTo(x, y)
 
       x += sliceWidth
     }
-    // context.lineTo(canvas.width, startY + chartHeight / 2);
     context.stroke()
   }
 
@@ -122,7 +115,6 @@
 
     const chartHeight = canvas.height / 2
 
-    // Draw the background and divider
     drawBackground()
 
     tones.forEach((tone, index) => {
@@ -131,12 +123,10 @@
       tone.analyser.getByteTimeDomainData(tone.dataArray)
       const sliceWidth = (canvas.width * 6.0) / tone.bufferLength
 
-      // Draw on the top half for left channel
       if (tone.pan <= 0) {
         drawChannel(canvasContext, sliceWidth, tone, 0, chartHeight, index)
       }
 
-      // Draw on the bottom half for right channel
       if (tone.pan >= 0) {
         drawChannel(
           canvasContext,
@@ -149,18 +139,27 @@
       }
     })
 
-    // Use requestAnimationFrame to throttle the draw calls
     drawRequestId = requestAnimationFrame(drawWaveform)
+  }
+
+  function resumeAudioContext() {
+    if (audioContext.state === 'suspended') {
+      audioContext.resume()
+    }
   }
 
   onMount(() => {
     audioContext = new (window.AudioContext || window.webkitAudioContext)()
     canvasContext = canvas.getContext('2d')!
+
+    document.addEventListener('visibilitychange', resumeAudioContext)
+    setInterval(resumeAudioContext, 1000) // Check and resume every second
   })
 
   onDestroy(() => {
-    cancelAnimationFrame(drawRequestId) // Clean up the animation frame on component destroy
-    tones.forEach(stopTone) // Stop all tones to free up resources
+    cancelAnimationFrame(drawRequestId)
+    tones.forEach(stopTone)
+    document.removeEventListener('visibilitychange', resumeAudioContext)
   })
 
   $: if (playing) {
